@@ -19,7 +19,7 @@ interface ContentGridProps {
   limit?: number
 }
 
-export default function ContentGrid({ title, shows, loading, error, limit = 10 }: ContentGridProps) {
+export default function ContentGrid({ title, shows, loading, error, limit = 5 }: ContentGridProps) {
   if (loading) {
     return (
       <div className="w-full">
@@ -29,7 +29,10 @@ export default function ContentGrid({ title, shows, loading, error, limit = 10 }
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           {[...Array(limit)].map((_, index) => (
-            <div key={index} className="w-full h-[300px] bg-[#292929] rounded-lg animate-pulse" />
+            <div key={index} className="w-[250px] flex-col justify-start items-start gap-[8.01px] inline-flex">
+              <div className="w-full h-[370.37px] bg-[#292929] rounded-[6px] animate-pulse" />
+              <div className="w-full h-5 bg-[#292929] rounded animate-pulse" />
+            </div>
           ))}
         </div>
       </div>
