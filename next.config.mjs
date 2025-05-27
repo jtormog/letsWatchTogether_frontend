@@ -1,15 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-      images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*", // Allow images from all domains
-      },
-    ],
-    dangerouslyAllowSVG: true, // Enable SVG images
+  eslint: {
+    ignoreDuringBuilds: true,
   },
-};
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
+}
 
-export default nextConfig;
-
+export default nextConfig

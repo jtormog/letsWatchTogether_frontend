@@ -1,8 +1,11 @@
-export default function SearchIcon() {
+export default function SearchIcon({ className = "w-5 h-5" }) {
   return (
-    <svg width="21" height="20" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M9.27775 15.8333C12.9596 15.8333 15.9444 12.8486 15.9444 9.16667C15.9444 5.48477 12.9596 2.5 9.27775 2.5C5.59585 2.5 2.61108 5.48477 2.61108 9.16667C2.61108 12.8486 5.59585 15.8333 9.27775 15.8333Z" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M17.611 17.5001L14.0277 13.9167" stroke="currentColor" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+      <path
+        fillRule="evenodd"
+        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+        clipRule="evenodd"
+      />
     </svg>
-  );
+  )
 }
