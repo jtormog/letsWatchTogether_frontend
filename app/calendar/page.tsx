@@ -8,7 +8,7 @@ const mockEvents = [
   { id: 3, title: "The Witcher Finale", date: "2024-01-22", time: "21:00", participants: 2 },
 ]
 
-const daysOfWeek = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+const daysOfWeek = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 const months = [
   "Enero",
   "Febrero",
@@ -34,7 +34,7 @@ export default function CalendarPage() {
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
-    const startingDayOfWeek = firstDay.getDay()
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7
 
     const days = []
     for (let i = 0; i < startingDayOfWeek; i++) {
@@ -60,14 +60,11 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-[#000000] text-[#ffffff]">
       <div className="container mx-auto px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Calendario</h1>
-          <p className="text-[#a1a1aa]">Organiza tus sesiones de viewing con amigos</p>
+          <h1 className="text-3xl font-bold mb-2 text-[#0de383]">Calendario</h1>
         </div>
 
-        {/* Calendar Controls */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-center items-center mb-8">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigateMonth(-1)}
@@ -87,9 +84,7 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Calendar Grid */}
         <div className="bg-[#292929] rounded-lg p-6 border border-[#3f3f3f]">
-          {/* Days of week header */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {daysOfWeek.map((day) => (
               <div key={day} className="text-center text-sm font-medium text-[#a1a1aa] py-2">
@@ -98,7 +93,6 @@ export default function CalendarPage() {
             ))}
           </div>
 
-          {/* Calendar days */}
           <div className="grid grid-cols-7 gap-2">
             {days.map((day, index) => {
               if (!day) {
@@ -137,7 +131,6 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Upcoming Events */}
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Próximos Eventos</h3>
           <div className="grid gap-4">
@@ -152,7 +145,6 @@ export default function CalendarPage() {
                     {new Date(event.date).toLocaleDateString("es-ES")} - {event.time}
                   </p>
                 </div>
-                <div className="text-sm text-[#a1a1aa]">{event.participants} participantes</div>
               </div>
             ))}
           </div>

@@ -33,7 +33,6 @@ a {
   text-decoration: none;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -52,7 +51,6 @@ a {
   background: #767676;
 }
 
-/* Custom color classes */
 .color-blue-4 {
   color: #3f3f3f;
 }
@@ -85,12 +83,10 @@ a {
   background-color: #121212;
 }
 
-/* Smooth transitions */
 * {
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Focus styles */
 button:focus,
 input:focus,
 textarea:focus {
@@ -98,7 +94,6 @@ textarea:focus {
   outline-offset: 2px;
 }
 
-/* Loading animation */
 @keyframes pulse {
   0%,
   100% {

@@ -30,7 +30,6 @@ export default function ContentDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#ffffff]">
-      {/* Hero Section */}
       <div className="relative h-[60vh] overflow-hidden">
         <img
           src={mockContentData.backgroundImage || "/placeholder.svg"}
@@ -64,10 +63,8 @@ export default function ContentDetailPage() {
         </div>
       </div>
 
-      {/* Content Details */}
       <div className="container mx-auto px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Episodes List */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold">Episodios</h2>
@@ -110,9 +107,7 @@ export default function ContentDetailPage() {
             </div>
           </div>
 
-          {/* Sidebar Info */}
           <div className="space-y-6">
-            {/* Poster */}
             <div>
               <img
                 src={mockContentData.poster || "/placeholder.svg"}
@@ -121,7 +116,6 @@ export default function ContentDetailPage() {
               />
             </div>
 
-            {/* Genres */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Géneros</h3>
               <div className="flex flex-wrap gap-2">
@@ -136,7 +130,6 @@ export default function ContentDetailPage() {
               </div>
             </div>
 
-            {/* Cast */}
             <div>
               <h3 className="text-lg font-semibold mb-3">Reparto</h3>
               <div className="space-y-2">

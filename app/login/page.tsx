@@ -11,13 +11,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#000000] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-[#292929] rounded-lg p-8 border border-[#3f3f3f]">
-        {/* Logo */}
         <div className="text-center mb-2">
           <h1 className="text-[#0de383] text-2xl font-bold">Let'sWatchTogether</h1>
           <p className="text-[#a1a1aa] text-sm mt-1">Coordina tus series favoritas con amigos</p>
         </div>
 
-        {/* Tabs */}
         <div className="flex mb-6 mt-6">
           <button
             onClick={() => setActiveTab("login")}
@@ -39,7 +37,6 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Form */}
         <form className="space-y-4">
           <div>
             <input
@@ -60,7 +57,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Remember me */}
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -74,7 +70,6 @@ export default function LoginPage() {
             </label>
           </div>
 
-          {/* Login button */}
           <button
             type="submit"
             className="w-full bg-[#0de383] text-[#121212] py-3 px-4 rounded-md font-medium hover:bg-[#0de383]/90 transition-colors"
@@ -83,14 +78,12 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="my-6 flex items-center">
           <div className="flex-1 border-t border-[#3f3f3f]"></div>
           <span className="px-4 text-sm text-[#a1a1aa]">O continuar con</span>
           <div className="flex-1 border-t border-[#3f3f3f]"></div>
         </div>
 
-        {/* Social login */}
         <div className="space-y-3">
           <button className="w-full flex items-center justify-center px-4 py-3 bg-[#3f3f3f] border border-[#767676] rounded-md text-[#ffffff] hover:bg-[#3f3f3f]/80 transition-colors">
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">

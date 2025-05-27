@@ -7,7 +7,6 @@ export default function Card({ name, img, platform, progress }) {
         </div>
         <div className="w-full h-[370.37px] left-0 top-0 absolute bg-gradient-to-b from-[rgba(9,9,9,0)] to-[rgba(0,0,0,0.25)]" />
 
-        {/* Platform Badge */}
         {platform && (
           <div className="absolute top-2 right-2 z-10">
             <span
@@ -30,7 +29,6 @@ export default function Card({ name, img, platform, progress }) {
           </div>
         )}
 
-        {/* Progress Bar */}
         {progress !== undefined && progress !== null && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#3f3f3f]">
             <div className="h-full bg-[#0de383] transition-all duration-300" style={{ width: `${progress}%` }} />

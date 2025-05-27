@@ -1,4 +1,3 @@
-// app/api/tmdb/get-by-id/route.js
 import { NextResponse } from 'next/server';
 
 const API_KEY = process.env.TMDB_API_KEY;
@@ -14,7 +13,7 @@ async function getWorkById(id, type) {
 
 export async function POST(req) {
   try {
-    const { works } = await req.json(); // expects: [{ id: 550, type: 'movie' }, ...]
+    const { works } = await req.json();
 
     if (!Array.isArray(works)) {
       return NextResponse.json({ error: 'Invalid format' }, { status: 400 });

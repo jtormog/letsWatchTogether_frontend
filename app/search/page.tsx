@@ -110,11 +110,9 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen bg-[#000000] text-[#ffffff]">
       <div className="container mx-auto px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-[#0de383] text-3xl font-bold mb-6">Búsqueda</h1>
 
-          {/* Search Bar */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-grow">
               <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#a1a1aa] w-5 h-5" />
@@ -154,14 +152,11 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {/* Main Content Layout */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {/* Filter Sidebar */}
           <div className={`md:col-span-1 transition-all duration-300 ${showFilters ? "block" : "hidden"}`}>
             <div className="bg-[#292929] border border-[#3f3f3f] rounded-lg p-6 sticky top-24">
               <h3 className="text-[#0de383] text-lg font-semibold mb-4">Filtros</h3>
 
-              {/* Available to me toggle */}
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-[#ffffff]">Disponible para mí</span>
@@ -173,7 +168,6 @@ export default function SearchPage() {
                 <p className="text-xs text-[#a1a1aa]">Mostrar solo contenido disponible en mis plataformas</p>
               </div>
 
-              {/* Genres */}
               <div className="mb-6">
                 <h4 className="text-sm font-medium text-[#ffffff] mb-3">Géneros</h4>
                 <div className="flex flex-wrap gap-2">
@@ -197,7 +191,6 @@ export default function SearchPage() {
                 </div>
               </div>
 
-              {/* Status */}
               <div>
                 <h4 className="text-sm font-medium text-[#ffffff] mb-3">Estado</h4>
                 <div className="flex flex-wrap gap-2">
@@ -225,9 +218,7 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Content Grid */}
           <div className={`transition-all duration-300 ${showFilters ? "md:col-span-3" : "md:col-span-4"}`}>
-            {/* Tabs */}
             <div className="flex gap-1 mb-8 justify-start">
               {tabs.map((tab) => (
                 <button
@@ -244,10 +235,8 @@ export default function SearchPage() {
               ))}
             </div>
 
-            {/* Grid with responsive layout based on filter visibility */}
             <SearchGrid showFilters={showFilters} results={mockSearchResults} />
 
-            {/* Load More Button */}
             <div className="flex justify-center mt-8">
               <button className="px-6 py-3 border border-[#3f3f3f] rounded-lg text-[#a1a1aa] hover:text-[#ffffff] hover:bg-[#3f3f3f] transition-colors text-sm">
                 Cargar más

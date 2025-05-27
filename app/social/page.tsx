@@ -48,11 +48,9 @@ export default function SocialPage() {
   return (
     <div className="min-h-screen bg-[#000000] text-[#ffffff]">
       <div className="container mx-auto px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-[#ffffff] text-3xl font-bold mb-8">Social</h1>
+          <h1 className="text-[#0de383] text-3xl font-bold mb-8">Social</h1>
 
-          {/* Search Bar */}
           <div className="relative mb-8">
             <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#a1a1aa] w-5 h-5" />
             <input
@@ -65,7 +63,6 @@ export default function SocialPage() {
           </div>
         </div>
 
-        {/* Users Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {mockUsers.map((user) => (
             <div
@@ -96,7 +93,6 @@ export default function SocialPage() {
           ))}
         </div>
 
-        {/* Add Friend Button */}
         <div className="flex justify-center">
           <button className="bg-[#0de383] text-[#121212] px-6 py-3 rounded-lg font-medium hover:bg-[#0de383]/90 transition-colors flex items-center gap-2">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

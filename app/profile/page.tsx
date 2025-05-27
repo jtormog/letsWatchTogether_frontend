@@ -75,7 +75,6 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-[#000000] text-[#ffffff]">
       <div className="container mx-auto px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {/* User Profile Sidebar */}
           <div className="bg-[#292929] rounded-lg p-6 border border-[#3f3f3f]">
             <div className="flex flex-col items-center text-center">
               <img
@@ -133,9 +132,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Statistics */}
             <div className="bg-[#292929] rounded-lg p-6 border border-[#3f3f3f]">
               <h3 className="text-xl font-semibold mb-4">Mis estadísticas</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -183,7 +180,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Platforms */}
             <div className="bg-[#292929] rounded-lg p-6 border border-[#3f3f3f]">
               <h3 className="text-xl font-semibold mb-4">Mis plataformas</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,7 +209,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Library */}
         <div className="mb-8">
           <h2 className="text-2xl font-semibold mb-4">Mi biblioteca</h2>
           <div className="flex mb-4 border-b border-[#3f3f3f]">
@@ -245,12 +240,12 @@ export default function ProfilePage() {
                 name={show.title}
                 img={`/placeholder.svg?height=370&width=250&text=${show.title.replace(/\s+/g, "+")}`}
                 progress={show.progress}
+                platform={null}
               />
             ))}
           </div>
         </div>
 
-        {/* Recent History */}
         <div>
           <h2 className="text-2xl font-semibold mb-4">Historial reciente</h2>
           <div className="space-y-4">
