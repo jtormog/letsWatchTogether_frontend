@@ -1,10 +1,16 @@
 import Banner from "@/components/banner";
+import Section from "@/components/section";
 import Image from "next/image";
 
 export default function Home() {
   return (
-    <div>
+    <main className="relative w-full overflow-x-hidden">
       <Banner/>
-    </div>
+      <Section title="Recomendado por tus amigos"/>
+      <Section title="Tendencias"/>
+      <Section title="Viendo"/>
+      <Section title="Recomendado para ti"/>
+
+    </main>
   );
 }

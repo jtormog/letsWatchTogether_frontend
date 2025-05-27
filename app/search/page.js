@@ -1,7 +1,5 @@
 export default () => {
     return (
-        <div>
-            busqueda
-        </div>
+        <h3>uwu</h3>
     );
 }

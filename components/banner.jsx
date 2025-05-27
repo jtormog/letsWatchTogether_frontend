@@ -80,13 +80,11 @@ export default () => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const currentSeries = exampleRecommendations[currentIndex];
 	
-	// Procesamos la descripción para asegurar un corte limpio con puntos suspensivos
 	const processDescription = (text) => {
 		if (!text) return '';
-		const maxLength = 150; // Longitud máxima aproximada para 3 líneas
+		const maxLength = 150;
 		if (text.length <= maxLength) return text;
 		
-		// Corta el texto hasta el último espacio antes del límite
 		const truncated = text.substring(0, maxLength);
 		const lastSpace = truncated.lastIndexOf(' ');
 		
