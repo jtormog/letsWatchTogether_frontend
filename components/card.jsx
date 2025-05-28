@@ -1,6 +1,9 @@
-export default function Card({ name, img, platform, progress }) {
+import Link from "next/link"
+
+export default function Card({ id, name, img, platform, progress }) {
   return (
-    <div className="w-[250px] flex-col justify-start items-start gap-[8.01px] inline-flex">
+    <Link href={id ? `/content/${id}` : '#'} className="inline-block">
+      <div className="w-[250px] flex-col justify-start items-start gap-[8.01px] inline-flex cursor-pointer hover:scale-105 transition-transform duration-200">
       <div className="Container w-full h-[370.37px] relative overflow-hidden rounded-[6px]">
         <div className="w-full h-[370.37px] left-0 top-0 absolute shadow-[0px_4px_4px_rgba(0,0,0,0.25)] overflow-hidden flex-col justify-start items-start inline-flex">
           <img className="Image w-full h-[370.37px] object-cover" src={img || null} alt={name} />
@@ -39,5 +42,6 @@ export default function Card({ name, img, platform, progress }) {
         <div className="self-stretch text-white text-sm font-inter font-medium leading-5 break-words">{name}</div>
       </div>
     </div>
+    </Link>
   )
 }

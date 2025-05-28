@@ -16,7 +16,7 @@ export default function SearchGrid({ showFilters, results }: SearchGridProps) {
     <div className={`grid gap-4 justify-items-center ${showFilters ? "grid-cols-3" : "grid-cols-4"}`}>
       {results.slice(0, 12).map((item) => (
         <div key={item.id} className="w-fit">
-          <Card name={item.title} img={item.image} platform={item.platform} />
+          <Card id={item.id} name={item.title} img={item.image} platform={item.platform} progress={null} />
         </div>
       ))}
     </div>

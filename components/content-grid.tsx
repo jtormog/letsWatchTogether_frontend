@@ -59,7 +59,7 @@ export default function ContentGrid({ title, shows, loading, error, limit = 5 }:
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {shows.map((item) => (
-          <Card key={item.id} name={item.name} img={item.img} platform={item.platform} progress={item.progress} />
+          <Card key={item.id} id={item.id} name={item.name} img={item.img} platform={item.platform} progress={item.progress} />
         ))}
       </div>
     </div>

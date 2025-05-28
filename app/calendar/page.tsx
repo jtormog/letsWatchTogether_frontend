@@ -1,12 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { getNextEpisodesForUserSeries } from "@/services/tmdb"
 
-const mockEvents = [
-  { id: 1, title: "Stranger Things S4", date: "2024-01-15", time: "20:00", participants: 3 },
-  { id: 2, title: "Breaking Bad Marathon", date: "2024-01-18", time: "18:00", participants: 5 },
-  { id: 3, title: "The Witcher Finale", date: "2024-01-22", time: "21:00", participants: 2 },
-]
+interface Episode {
+  serieId: number
+  serieName: string
+  airDate: string
+  episode: number
+  season: number
+  episodeTitle: string
+}
 
 const daysOfWeek = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 const months = [
@@ -26,7 +31,30 @@ const months = [
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [episodes, setEpisodes] = useState<Episode[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showMoreEpisodes, setShowMoreEpisodes] = useState(false)
+
+  useEffect(() => {
+    async function fetchNextEpisodes() {
+      try {
+        setLoading(true)
+        const userSeriesIds = [
+          1399, 119051, 76479, 84958, 94997, 60735, 37854
+        ]
+        
+        const nextEpisodes = await getNextEpisodesForUserSeries(userSeriesIds)
+        setEpisodes(nextEpisodes)
+      } catch (error) {
+        console.error('Error fetching next episodes:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchNextEpisodes()
+  }, [])
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -51,8 +79,109 @@ export default function CalendarPage() {
   }
 
   const getEventsForDate = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0]
-    return mockEvents.filter((event) => event.date === dateString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    return episodes.filter((episode) => episode.airDate === dateString)
+  }
+
+  const getAllEventsForDate = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    return episodes.filter((episode) => episode.airDate === dateString)
+  }
+
+  const getFilteredAndSortedEpisodes = () => {
+    if (selectedDate) {
+      const selectedDateEvents = getEventsForDate(selectedDate)
+      return selectedDateEvents.sort((a, b) => {
+        return new Date(a.airDate).getTime() - new Date(b.airDate).getTime()
+      })
+    }
+    
+    const currentMonth = currentDate.getMonth()
+    const currentYear = currentDate.getFullYear()
+    
+    return episodes
+      .filter((episode) => {
+        const episodeDate = new Date(episode.airDate)
+        const episodeMonth = episodeDate.getMonth()
+        const episodeYear = episodeDate.getFullYear()
+        
+        return (episodeYear > currentYear) || (episodeYear === currentYear && episodeMonth >= currentMonth)
+      })
+      .sort((a, b) => {
+        return new Date(a.airDate).getTime() - new Date(b.airDate).getTime()
+      })
+  }
+
+  const filteredEpisodes = getFilteredAndSortedEpisodes()
+  const episodesToShow = selectedDate 
+    ? filteredEpisodes 
+    : (showMoreEpisodes ? filteredEpisodes.slice(0, 10) : filteredEpisodes.slice(0, 5))
+  const hasMoreEpisodes = selectedDate 
+    ? false 
+    : filteredEpisodes.length > (showMoreEpisodes ? 10 : 5)
+
+  const getTimeUntilEpisode = (airDate: string) => {
+    const episodeDate = new Date(airDate)
+    const today = new Date()
+    
+    const diffTime = episodeDate.getTime() - today.getTime()
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays < 0) {
+      return "Ya disponible"
+    } else if (diffDays === 0) {
+      return "Hoy"
+    } else if (diffDays === 1) {
+      return "Mañana"
+    } else if (diffDays < 7) {
+      return `${diffDays} días`
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7)
+      const remainingDays = diffDays % 7
+      if (remainingDays === 0) {
+        return weeks === 1 ? "1 semana" : `${weeks} semanas`
+      } else {
+        return weeks === 1 
+          ? `1 semana y ${remainingDays} día${remainingDays > 1 ? 's' : ''}`
+          : `${weeks} semanas y ${remainingDays} día${remainingDays > 1 ? 's' : ''}`
+      }
+    } else {
+      const months = Math.floor(diffDays / 30)
+      const remainingDays = diffDays % 30
+      if (remainingDays === 0) {
+        return months === 1 ? "1 mes" : `${months} meses`
+      } else if (remainingDays < 7) {
+        return months === 1 
+          ? `1 mes y ${remainingDays} día${remainingDays > 1 ? 's' : ''}`
+          : `${months} meses y ${remainingDays} día${remainingDays > 1 ? 's' : ''}`
+      } else {
+        const weeks = Math.floor(remainingDays / 7)
+        const days = remainingDays % 7
+        if (days === 0) {
+          return months === 1 
+            ? `1 mes y ${weeks} semana${weeks > 1 ? 's' : ''}`
+            : `${months} meses y ${weeks} semana${weeks > 1 ? 's' : ''}`
+        } else {
+          return months === 1 
+            ? `1 mes, ${weeks} semana${weeks > 1 ? 's' : ''} y ${days} día${days > 1 ? 's' : ''}`
+            : `${months} meses, ${weeks} semana${weeks > 1 ? 's' : ''} y ${days} día${days > 1 ? 's' : ''}`
+        }
+      }
+    }
+  }
+
+  const navigateToEpisodeDate = (episode: Episode) => {
+    const episodeDate = new Date(episode.airDate)
+    
+    setCurrentDate(new Date(episodeDate.getFullYear(), episodeDate.getMonth(), 1))
+    
+    setSelectedDate(episodeDate)
   }
 
   const days = getDaysInMonth(currentDate)
@@ -100,13 +229,20 @@ export default function CalendarPage() {
               }
 
               const events = getEventsForDate(day)
+              const allEvents = getAllEventsForDate(day)
               const isToday = day.toDateString() === new Date().toDateString()
-              const isSelected = day.toDateString() === selectedDate.toDateString()
+              const isSelected = selectedDate ? day.toDateString() === selectedDate.toDateString() : false
 
               return (
                 <div
                   key={index}
-                  onClick={() => setSelectedDate(day)}
+                  onClick={() => {
+                    if (selectedDate && day.toDateString() === selectedDate.toDateString()) {
+                      setSelectedDate(null)
+                    } else {
+                      setSelectedDate(day)
+                    }
+                  }}
                   className={`h-20 p-2 border border-[#3f3f3f] rounded-lg cursor-pointer transition-colors ${
                     isSelected ? "bg-[#0de383]/20 border-[#0de383]" : "hover:bg-[#3f3f3f]/50"
                   }`}
@@ -114,15 +250,17 @@ export default function CalendarPage() {
                   <div className={`text-sm font-medium ${isToday ? "text-[#0de383]" : ""}`}>{day.getDate()}</div>
                   {events.length > 0 && (
                     <div className="mt-1">
-                      {events.slice(0, 2).map((event, eventIndex) => (
-                        <div
-                          key={eventIndex}
-                          className="text-xs bg-[#0de383] text-[#121212] px-1 py-0.5 rounded mb-1 truncate"
-                        >
-                          {event.title}
+                      <div
+                        key={`${events[0].serieId}-${events[0].season}-${events[0].episode}`}
+                        className="text-xs bg-[#0de383] text-[#121212] px-1 py-0.5 rounded mb-1 truncate"
+                      >
+                        {events[0].serieName} S{events[0].season}E{events[0].episode}
+                      </div>
+                      {allEvents.length > 1 && (
+                        <div className="text-xs text-[#a1a1aa]">
+                          +{allEvents.length - 1} más
                         </div>
-                      ))}
-                      {events.length > 2 && <div className="text-xs text-[#a1a1aa]">+{events.length - 2} más</div>}
+                      )}
                     </div>
                   )}
                 </div>
@@ -132,22 +270,75 @@ export default function CalendarPage() {
         </div>
 
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Próximos Eventos</h3>
-          <div className="grid gap-4">
-            {mockEvents.map((event) => (
-              <div
-                key={event.id}
-                className="bg-[#292929] rounded-lg p-4 border border-[#3f3f3f] flex items-center justify-between"
+          <h3 className="text-xl font-semibold mb-4">
+            {selectedDate 
+              ? `Episodios del ${selectedDate.getDate()} de ${months[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`
+              : "Próximos Episodios"
+            }
+          </h3>
+          {selectedDate && (
+            <div className="mb-4">
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="px-4 py-2 bg-[#292929] text-[#ffffff] rounded-lg font-medium hover:bg-[#3f3f3f] transition-colors text-sm"
               >
-                <div>
-                  <h4 className="font-medium text-[#ffffff]">{event.title}</h4>
-                  <p className="text-sm text-[#a1a1aa]">
-                    {new Date(event.date).toLocaleDateString("es-ES")} - {event.time}
-                  </p>
+                Mostrar todos los episodios
+              </button>
+            </div>
+          )}
+          {loading ? (
+            <div className="text-center text-[#a1a1aa]">Cargando próximos episodios...</div>
+          ) : (
+            <div className="grid gap-4">
+              {episodesToShow.map((episode: Episode) => (
+                <div
+                  key={`${episode.serieId}-${episode.season}-${episode.episode}`}
+                  className="bg-[#292929] rounded-lg p-4 border border-[#3f3f3f] flex items-center justify-between cursor-pointer hover:bg-[#3f3f3f] transition-colors"
+                  onClick={() => navigateToEpisodeDate(episode)}
+                >
+                  <div>
+                    <h4 className="font-medium text-[#ffffff]">
+                      <Link 
+                        href={`/content/${episode.serieId}`}
+                        className="text-[#0de383] hover:text-[#0de383]/80 transition-colors cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {episode.serieName}
+                      </Link>
+                      {" - S"}{episode.season}E{episode.episode}
+                    </h4>
+                    <p className="text-sm text-[#0de383] mb-1">{episode.episodeTitle}</p>
+                    <p className="text-sm text-[#a1a1aa]">
+                      {new Date(episode.airDate).toLocaleDateString("es-ES")}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-[#0de383]">
+                      {getTimeUntilEpisode(episode.airDate)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+              {episodesToShow.length === 0 && !loading && (
+                <div className="text-center text-[#a1a1aa]">
+                  {selectedDate 
+                    ? "No hay episodios programados para este día"
+                    : "No hay próximos episodios programados para este mes o posteriores"
+                  }
+                </div>
+              )}
+              {hasMoreEpisodes && (
+                <div className="text-center mt-4">
+                  <button
+                    onClick={() => setShowMoreEpisodes(!showMoreEpisodes)}
+                    className="px-6 py-2 bg-[#0de383] text-[#121212] rounded-lg font-medium hover:bg-[#0de383]/80 transition-colors"
+                  >
+                    {showMoreEpisodes ? "Mostrar menos" : "Mostrar más"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

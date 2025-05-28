@@ -237,6 +237,7 @@ export default function ProfilePage() {
             {libraryShows.slice(0, 5).map((show) => (
               <Card
                 key={show.id}
+                id={show.id}
                 name={show.title}
                 img={`/placeholder.svg?height=370&width=250&text=${show.title.replace(/\s+/g, "+")}`}
                 progress={show.progress}
