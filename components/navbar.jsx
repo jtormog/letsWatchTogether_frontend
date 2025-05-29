@@ -69,7 +69,11 @@ export default function Navbar() {
   const handleNavigation = (path) => {
     router.push(path)
   }
-
+  
+  if (currentPath === '/login') {
+    return null;
+  }
+  
   return (
     <div className="navbar-container w-full fixed top-0 h-20 flex items-center justify-center backdrop-blur-md bg-[rgba(18,18,18,0.7)] z-[1000]">
       <div className="navbar-inner w-full px-2 sm:px-4 md:px-6 lg:px-8 max-w-screen-3xl flex justify-between items-center">
@@ -99,7 +103,7 @@ export default function Navbar() {
           onClick={() => handleNavigation("/profile")}
         >
           <Image
-            src="https://placehold.co/100x100/2E8B57/FFFFFF?text=JT"
+            src="https://placehold.co/100x100/2E8B57/FFFFFF?text=JP"
             alt="User avatar"
             width={32}
             height={32}

@@ -3,8 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --font-geist-sans: "Geist Sans", sans-serif;
-  --font-geist-mono: "Geist Mono", monospace;
   --font-inter: "Inter", sans-serif;
   --font-poppins: "Poppins", sans-serif;
   --radius: 0.5rem;

@@ -1,50 +1,74 @@
 "use client"
 
 import SocialIcon from "@/icons/SocialIcon"
-import { useState } from "react"
-
-const exampleRecommendations = [
-  {
-    media: {
-      title: "Stranger Things",
-      description:
-        "Cuando un niño desaparece, un pequeño pueblo descubre un misterio que involucra experimentos secretos, fuerzas sobrenaturales y una extraña niña.",
-      backgroundImage: "/placeholder.svg?height=1080&width=1920&text=Stranger+Things",
-    },
-    recommendator: {
-      userName: "Jesús Cristo",
-      profileImage: "/placeholder.svg?height=100&width=100&text=JC",
-    },
-  },
-  {
-    media: {
-      title: "Breaking Bad",
-      description:
-        "Un profesor de química con cáncer terminal se asocia con un exalumno para fabricar y vender metanfetamina para asegurar el futuro financiero de su familia.",
-      backgroundImage: "/placeholder.svg?height=1080&width=1920&text=Breaking+Bad",
-    },
-    recommendator: {
-      userName: "Walter White",
-      profileImage: "/placeholder.svg?height=100&width=100&text=WW",
-    },
-  },
-  {
-    media: {
-      title: "Game of Thrones",
-      description:
-        "Nobles familias luchan por el control de los Siete Reinos mientras antiguas amenazas emergen desde más allá del colosal muro que protege el norte.",
-      backgroundImage: "/placeholder.svg?height=1080&width=1920&text=Game+of+Thrones",
-    },
-    recommendator: {
-      userName: "Jon Snow",
-      profileImage: "/placeholder.svg?height=100&width=100&text=JS",
-    },
-  },
-]
+import { useState, useEffect } from "react"
+import { getFriendsWantToSee } from "@/services/auth"
+import { getWorksByTypeAndIdList } from "@/services/tmdb"
 
 export default function Banner() {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const currentSeries = exampleRecommendations[currentIndex]
+  const [friendsRecommendations, setFriendsRecommendations] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const fetchFriendsRecommendations = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const userId = "1"
+      
+      const friendsWantToSee = await getFriendsWantToSee(userId)
+      
+      if (!friendsWantToSee || friendsWantToSee.length === 0) {
+        setFriendsRecommendations([])
+        return
+      }
+      
+      const itemsForTmdb = friendsWantToSee.map(item => ({
+        type: item.type,
+        id: item.id
+      }))
+      
+      const tmdbData = await getWorksByTypeAndIdList(itemsForTmdb)
+      
+      const combinedData = tmdbData.map(tmdbItem => {
+        const friendData = friendsWantToSee.find(friend => friend.id === tmdbItem.id)
+        return {
+          media: {
+            id: tmdbItem.id,
+            title: tmdbItem.title,
+            description: tmdbItem.overview,
+            type: tmdbItem.mediaType,
+            backgroundImage: tmdbItem.poster || "/placeholder.svg?height=1080&width=1920&text=" + encodeURIComponent(tmdbItem.title),
+          },
+          recommendator: {
+            userName: friendData?.friendName || "Amigo",
+            profileImage: friendData?.friendAvatar || "/placeholder.svg?height=100&width=100&text=A",
+          },
+        }
+      })
+      
+      setFriendsRecommendations(combinedData)
+    } catch (err) {
+      console.error("Error fetching friends recommendations:", err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchFriendsRecommendations()
+  }, [])
+
+  useEffect(() => {
+    if (friendsRecommendations.length > 0 && currentIndex >= friendsRecommendations.length) {
+      setCurrentIndex(0)
+    }
+  }, [friendsRecommendations, currentIndex])
+
+  const currentSeries = friendsRecommendations[currentIndex]
 
   const processDescription = (text) => {
     if (!text) return ""
@@ -58,11 +82,95 @@ export default function Banner() {
   }
 
   const handlePrevious = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? exampleRecommendations.length - 1 : prevIndex - 1))
+    if (friendsRecommendations.length > 0) {
+      setCurrentIndex((prevIndex) => (prevIndex === 0 ? friendsRecommendations.length - 1 : prevIndex - 1))
+    }
   }
 
   const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === exampleRecommendations.length - 1 ? 0 : prevIndex + 1))
+    if (friendsRecommendations.length > 0) {
+      setCurrentIndex((prevIndex) => (prevIndex === friendsRecommendations.length - 1 ? 0 : prevIndex + 1))
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="self-stretch relative w-full h-0 pb-[43.75%]">
+        <div className="w-full h-full absolute inset-0 flex flex-col justify-start items-start overflow-hidden">
+          <div className="w-full h-full bg-gray-700 animate-pulse" />
+        </div>
+        <div className="w-full h-full absolute inset-0 bg-gradient-to-l from-blue-900/40 via-blue-900/20 to-black" />
+        <div className="w-full h-full absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black" />
+        <div className="w-full h-full p-12 absolute inset-0 flex flex-col justify-between items-start">
+          <div className="self-stretch pt-8 flex flex-col justify-start items-start">
+            <div className="self-stretch inline-flex justify-start items-center">
+              <div className="w-10 h-8 pr-2 inline-flex flex-col justify-start items-start">
+                <div className="w-8 h-8 bg-gray-600 animate-pulse rounded-full" />
+              </div>
+              <div className="px-2.5 py-[3px] bg-gray-600 animate-pulse rounded-full flex justify-start items-center">
+                <div className="w-32 h-4 bg-gray-500 animate-pulse rounded" />
+              </div>
+            </div>
+          </div>
+          <div className="w-full flex flex-col justify-start items-start gap-3">
+            <div className="self-stretch flex flex-col justify-start items-start">
+              <div className="w-80 h-16 bg-gray-600 animate-pulse rounded" />
+            </div>
+            <div className="self-stretch inline-flex justify-between items-center">
+              <div className="p-1.5 bg-black/50 rounded-full inline-flex justify-center items-center w-10 h-10">
+                <span className="text-white text-lg">&lt;</span>
+              </div>
+              <div className="flex-1 flex justify-center items-center">
+                <div className="flex justify-center items-center gap-2">
+                  {[...Array(3)].map((_, index) => (
+                    <div key={index} className="w-3 h-3 bg-white/50 rounded-full animate-pulse" />
+                  ))}
+                </div>
+              </div>
+              <div className="p-1.5 bg-black/50 rounded-full inline-flex justify-center items-center w-10 h-10">
+                <span className="text-white text-lg">&gt;</span>
+              </div>
+            </div>
+            <div className="self-stretch pt-1 flex flex-col justify-start items-start overflow-hidden">
+              <div className="w-full h-7 bg-gray-600 animate-pulse rounded" />
+            </div>
+            <div className="self-stretch pt-2 inline-flex justify-start items-start">
+              <div className="h-10 px-4 py-2.5 bg-gray-600 animate-pulse rounded-md flex justify-center items-center">
+                <div className="w-24 h-4 bg-gray-500 animate-pulse rounded" />
+              </div>
+              <div className="h-10 pl-4 inline-flex flex-col justify-start items-start">
+                <div className="h-10 px-4 py-2.5 bg-gray-600 animate-pulse rounded-md flex justify-center items-center">
+                  <div className="w-20 h-4 bg-gray-500 animate-pulse rounded" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !currentSeries) {
+    return (
+      <div className="self-stretch relative w-full h-0 pb-[43.75%]">
+        <div className="w-full h-full absolute inset-0 flex flex-col justify-center items-center bg-gray-800">
+          <div className="text-white text-xl mb-4">
+            {error ? "Error al cargar recomendaciones" : "No hay recomendaciones disponibles"}
+          </div>
+          <div className="text-gray-400 text-sm mb-4">
+            {error ? error : "Intenta recargar la página"}
+          </div>
+          {error && (
+            <button
+              onClick={fetchFriendsRecommendations}
+              className="px-4 py-2 bg-emerald-500 text-gray-800 rounded-md hover:bg-emerald-600 transition-colors duration-200 font-medium"
+            >
+              Reintentar
+            </button>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -117,7 +225,7 @@ export default function Banner() {
             </div>
             <div className="flex-1 flex justify-center items-center">
               <div className="flex justify-center items-center gap-2">
-                {exampleRecommendations.map((_, index) => (
+                {friendsRecommendations.map((_, index) => (
                   <div key={index} className="inline-flex justify-center items-center">
                     <div
                       className={`w-3 h-3 ${index === currentIndex ? "bg-emerald-500" : "bg-white/50"} rounded-full cursor-pointer transition-all duration-200 hover:bg-white/70`}
@@ -142,15 +250,18 @@ export default function Banner() {
           <div className="self-stretch pt-2 inline-flex justify-start items-start">
             <div className="h-10 px-4 py-2.5 bg-emerald-500 rounded-md flex justify-center items-center">
               <div className="text-center justify-center text-gray-800 text-sm font-medium font-inter leading-tight">
-                Ver con amigos
+                Ver con {currentSeries.recommendator.userName.split(' ')[0]}
               </div>
             </div>
             <div className="h-10 pl-4 inline-flex flex-col justify-start items-start">
-              <div className="h-10 px-4 py-2.5 bg-neutral-900 rounded-md outline outline-1 outline-offset-[-1px] outline-white inline-flex justify-center items-center">
+              <a 
+                href={`/content/${currentSeries.media.id || ''}?type=${currentSeries.media.type || 'tv'}`}
+                className="h-10 px-4 py-2.5 bg-neutral-900 rounded-md outline outline-1 outline-offset-[-1px] outline-white inline-flex justify-center items-center hover:bg-neutral-800 transition-colors duration-200"
+              >
                 <div className="text-center justify-center text-white text-sm font-medium font-inter leading-tight">
                   Ver detalles
                 </div>
-              </div>
+              </a>
             </div>
           </div>
         </div>

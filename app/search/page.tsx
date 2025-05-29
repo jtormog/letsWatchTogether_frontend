@@ -1,39 +1,256 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import SearchIcon from "@/icons/SearchIcon"
 import SearchGrid from "@/components/search-grid"
+import { searchContent, getWorksByIds } from "@/services/tmdb"
+import { getUserLiked, getUserWatchlist } from "@/services/auth"
+
+interface SearchResult {
+  id: number
+  title: string
+  overview: string
+  poster: string | null
+  mediaType: string
+  year: string | null
+  popularity?: number
+  voteAverage?: number
+  releaseDate?: string
+  progress?: number
+}
+
+interface SearchResponse {
+  results: SearchResult[]
+  totalPages: number
+  currentPage: number
+  totalResults: number
+}
 
 export default function SearchPage() {
+  return (
+    <Suspense fallback={<SearchPageFallback />}>
+      <SearchPageContent />
+    </Suspense>
+  )
+}
+
+function SearchPageFallback() {
+  return (
+    <div className="min-h-screen bg-[#000000] text-[#ffffff]">
+      <div className="container mx-auto px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-[#0de383] text-3xl font-bold mb-6">Búsqueda</h1>
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="relative flex-grow">
+              <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#a1a1aa] w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Buscar series, películas, géneros..."
+                className="w-full pl-12 pr-4 py-4 bg-[#292929] border border-[#3f3f3f] rounded-lg text-[#ffffff] placeholder-[#a1a1aa] focus:outline-none focus:border-[#0de383] focus:ring-1 focus:ring-[#0de383]"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center items-center h-64">
+          <div className="text-[#a1a1aa]">Cargando...</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SearchPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "")
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "populares")
   const [showFilters, setShowFilters] = useState(false)
+  const [searchData, setSearchData] = useState<SearchResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const userId = "124"
 
   useEffect(() => {
     const query = searchParams.get('q')
     const tab = searchParams.get('tab')
     
-    if (query) setSearchQuery(query)
-    if (tab) setActiveTab(tab)
+    if (query) {
+      setSearchQuery(query)
+      setActiveTab('') // Clear active tab when searching
+    } else if (tab) {
+      setActiveTab(tab)
+      setSearchQuery('') // Clear search when tab is active
+    } else {
+      setActiveTab('populares')
+      setSearchQuery('')
+    }
   }, [searchParams])
+
+  useEffect(() => {
+    setCurrentPage(1)
+    setSearchData(null)
+  }, [searchQuery, activeTab])
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        let data: SearchResponse | null = null
+
+        if (searchQuery.trim()) {
+          data = await searchContent(searchQuery, currentPage, 'all')
+        } else {
+          switch (activeTab) {
+            case 'populares':
+              const response = await fetch('/api/tmdb/popular?limit=20')
+              if (!response.ok) {
+                throw new Error('Error fetching popular content')
+              }
+              const popularData = await response.json()
+              
+              const formattedResults = popularData.map((item: any) => ({
+                id: item.id,
+                title: item.title || item.name,
+                overview: item.overview,
+                poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+                mediaType: item.tipo === 'película' ? 'movie' : 'tv',
+                year: item.release_date ? new Date(item.release_date).getFullYear().toString() : 
+                      item.first_air_date ? new Date(item.first_air_date).getFullYear().toString() : null,
+                popularity: item.popularity,
+                voteAverage: item.vote_average,
+                releaseDate: item.release_date || item.first_air_date
+              }))
+
+              data = {
+                results: formattedResults,
+                totalPages: 1,
+                currentPage: 1,
+                totalResults: formattedResults.length
+              }
+              break
+
+            case 'recomendadas':
+              const friendsIds = [
+                { id: 299536, type: 'movie' },
+                { id: 94997, type: 'tv' },
+                { id: 157336, type: 'movie' },
+                { id: 60735, type: 'tv' },
+                { id: 634649, type: 'movie' }
+              ]
+              
+              const recommendationsData = await getWorksByIds(friendsIds)
+
+              const formattedRecommendations = recommendationsData.map((item: any) => ({
+                id: item.id,
+                title: item.title || item.name,
+                overview: item.overview,
+                poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+                mediaType: item.tipo === 'película' ? 'movie' : 'tv',
+                year: item.release_date ? new Date(item.release_date).getFullYear().toString() : 
+                      item.first_air_date ? new Date(item.first_air_date).getFullYear().toString() : null,
+                popularity: item.popularity,
+                voteAverage: item.vote_average,
+                releaseDate: item.release_date || item.first_air_date
+              }))
+
+              data = {
+                results: formattedRecommendations,
+                totalPages: 1,
+                currentPage: 1,
+                totalResults: formattedRecommendations.length
+              }
+              break
+
+            case 'me-gusta':
+              const liked = await getUserLiked(userId)
+
+              data = {
+                results: liked,
+                totalPages: 1,
+                currentPage: 1,
+                totalResults: liked.length
+              }
+              break
+
+            case 'siguiendo':
+              const watchlist = await getUserWatchlist(userId)
+              const formattedWatchlist = watchlist.map((item: any) => ({
+                id: item.id,
+                title: item.title,
+                overview: item.overview,
+                poster: item.poster,
+                mediaType: item.mediaType,
+                year: item.year,
+                popularity: item.popularity,
+                voteAverage: item.voteAverage,
+                releaseDate: item.releaseDate,
+                progress: item.mediaType === 'tv' ? item.progress : undefined
+              }))
+
+              data = {
+                results: formattedWatchlist,
+                totalPages: 1,
+                currentPage: 1,
+                totalResults: formattedWatchlist.length
+              }
+              break
+
+            default:
+              break
+          }
+        }
+
+        if (currentPage === 1) {
+          setSearchData(data)
+        } else {
+          setSearchData(prev => prev && data ? {
+            ...data,
+            results: [...prev.results, ...data.results]
+          } : data)
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error al buscar contenido')
+        setSearchData(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    const timeoutId = setTimeout(() => {
+      fetchResults()
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, activeTab, currentPage, userId])
 
   const updateURL = (newQuery: string, newTab?: string) => {
     const params = new URLSearchParams()
     
-    if (newQuery.trim()) {
+    if (newTab) {
+      params.set('tab', newTab)
+    } else if (newQuery.trim()) {
       params.set('q', newQuery)
-    }
-    
-    if (newTab || activeTab) {
-      params.set('tab', newTab || activeTab)
+    } else {
+      if (activeTab && activeTab !== 'populares') {
+        params.set('tab', activeTab)
+      }
     }
 
     const url = params.toString() ? `/search?${params.toString()}` : '/search'
     router.push(url, { scroll: false })
+  }
+
+  const loadMore = () => {
+    if (searchData && currentPage < searchData.totalPages) {
+      setCurrentPage(prev => prev + 1)
+    }
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,7 +267,8 @@ export default function SearchPage() {
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId)
-    updateURL(searchQuery, tabId)
+    setSearchQuery('')
+    updateURL('', tabId)
   }
 
   const toggleFilters = () => {
@@ -59,10 +277,22 @@ export default function SearchPage() {
 
   const tabs = [
     { id: "populares", label: "Populares" },
-    { id: "recientes", label: "Recientes" },
-    { id: "valoradas", label: "Valoradas" },
+    { id: "siguiendo", label: "Siguiendo" },
+    { id: "me-gusta", label: "Me gusta" },
     { id: "recomendadas", label: "Recomendadas" },
   ]
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#000000] text-[#ffffff]">
+        <div className="container mx-auto px-8 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p className="text-red-500">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#000000] text-[#ffffff]">
@@ -183,7 +413,7 @@ export default function SearchPage() {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={`px-6 py-3 text-sm font-medium transition-colors ${
-                    activeTab === tab.id
+                    activeTab === tab.id && !searchQuery.trim()
                       ? "bg-[#0de383] text-[#121212] rounded-lg"
                       : "text-[#a1a1aa] hover:text-[#ffffff]"
                   }`}
@@ -193,7 +423,14 @@ export default function SearchPage() {
               ))}
             </div>
 
-            <SearchGrid showFilters={showFilters} searchQuery={searchQuery} activeTab={activeTab} />
+            <SearchGrid 
+              showFilters={showFilters} 
+              searchData={searchData}
+              loading={loading}
+              searchQuery={searchQuery}
+              activeTab={activeTab}
+              onLoadMore={loadMore}
+            />
           </div>
         </div>
       </div>

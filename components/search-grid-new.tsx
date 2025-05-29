@@ -10,7 +10,6 @@ interface SearchResult {
   popularity?: number
   voteAverage?: number
   releaseDate?: string
-  progress?: number
 }
 
 interface SearchResponse {
@@ -47,9 +46,19 @@ export default function SearchGrid({
   }
 
   if (!searchData || searchData.results.length === 0) {
+    let message = "Escribe algo para buscar contenido..."
+    
+    if (!searchQuery.trim() && activeTab !== 'populares') {
+      message = "Selecciona la pestaña 'Populares' o escribe algo para buscar"
+    } else if (searchQuery.trim()) {
+      message = `No se encontraron resultados para "${searchQuery}"`
+    } else if (!searchQuery.trim() && activeTab === 'populares') {
+      message = "No se pudo cargar el contenido popular"
+    }
+    
     return (
       <div className="flex justify-center items-center h-64">
-        {/* Sin mensaje de texto, solo espacio vacío */}
+        <p className="text-[#a1a1aa]">{message}</p>
       </div>
     )
   }
@@ -63,8 +72,8 @@ export default function SearchGrid({
               id={item.id} 
               name={item.title} 
               img={item.poster || "/placeholder.svg"} 
-              platform={null} 
-              progress={item.progress || null} 
+              platform={item.mediaType === 'tv' ? 'Serie' : 'Película'} 
+              progress={null} 
               mediaType={item.mediaType}
             />
           </div>

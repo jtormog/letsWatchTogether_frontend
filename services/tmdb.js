@@ -98,3 +98,19 @@ export async function searchContent(query, page = 1, tab = 'populares') {
     throw new Error('Ha habido un error al buscar contenido');
   }
 }
+
+export async function getWorksByTypeAndIdList(items) {
+  try {
+    const res = await fetch('/api/tmdb/from-list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(items),
+    });
+
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+
+    return await res.json();
+  } catch (err) {
+    throw new Error('No se pudieron obtener las obras por ID');
+  }
+}

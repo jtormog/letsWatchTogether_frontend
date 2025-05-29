@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Banner from "@/components/banner"
 import ContentGrid from "@/components/content-grid"
 import { getTopPopularMixed, getWorksByIds } from "@/services/tmdb"
+import { getUserWatchlist } from "@/services/auth"
 
 interface Show {
   id: number
@@ -56,11 +57,12 @@ export default function Home() {
         { id: 505642, type: 'movie' }
       ]
 
+      const userId = "124"
       Promise.allSettled([
         getTopPopularMixed(20),
         getWorksByIds(testIds),
         getWorksByIds(friendsIds),
-        getWorksByIds(watchingIds)
+        getUserWatchlist(userId)
       ]).then(results => {
         if (results[0].status === 'fulfilled') {
           const transformedData: Show[] = results[0].value.map((item: any) => ({
@@ -97,11 +99,11 @@ export default function Home() {
 
         if (results[3].status === 'fulfilled') {
           const transformedWatchingData: Show[] = results[3].value.map((item: any) => ({
-            name: item.title || item.name,
-            img: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
-            type: item.tipo,
+            name: item.title,
+            img: item.poster,
+            type: item.mediaType,
             id: item.id,
-            progress: Math.floor(Math.random() * 80) + 10,
+            progress: item.mediaType === 'tv' ? item.progress : undefined
           }))
           setWatching(transformedWatchingData)
         }
