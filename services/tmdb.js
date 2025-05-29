@@ -70,3 +70,31 @@ export async function getFullShowDetails(tvId) {
     throw new Error('No se pudo obtener la información completa de la serie.');
   }
 }
+
+export async function searchMedia(query) {
+  try {
+    const res = await fetch(`/api/tmdb/search?q=${encodeURIComponent(query)}`);
+    if (!res.ok) {
+      throw new Error(`Error al buscar: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (err) {
+    throw new Error('No se pudieron obtener los resultados de búsqueda.');
+  }
+}
+
+export async function searchContent(query, page = 1, tab = 'populares') {
+  try {
+    const response = await fetch(`/api/tmdb/search?q=${encodeURIComponent(query)}&page=${page}&tab=${tab}`);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('Ha habido un error al buscar contenido');
+  }
+}

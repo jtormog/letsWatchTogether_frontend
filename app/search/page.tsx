@@ -1,100 +1,57 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import SearchIcon from "@/icons/SearchIcon"
 import SearchGrid from "@/components/search-grid"
 
-const mockSearchResults = [
-  {
-    id: 1,
-    title: "Stranger Things",
-    image: "/placeholder.svg?height=400&width=300&text=Stranger+Things",
-    platform: "Netflix",
-    size: "large",
-  },
-  {
-    id: 2,
-    title: "Breaking Bad",
-    image: "/placeholder.svg?height=400&width=300&text=Breaking+Bad",
-    platform: "Netflix",
-    size: "large",
-  },
-  {
-    id: 3,
-    title: "Better Call Saul",
-    image: "/placeholder.svg?height=500&width=300&text=Better+Call+Saul",
-    platform: "Netflix",
-    size: "tall",
-  },
-  {
-    id: 4,
-    title: "The Boys",
-    image: "/placeholder.svg?height=400&width=300&text=The+Boys",
-    platform: "Prime",
-    size: "large",
-  },
-  {
-    id: 5,
-    title: "The Mandalorian",
-    image: "/placeholder.svg?height=400&width=300&text=The+Mandalorian",
-    platform: "Disney+",
-    size: "large",
-  },
-  {
-    id: 6,
-    title: "Game of Thrones",
-    image: "/placeholder.svg?height=400&width=300&text=Game+of+Thrones",
-    platform: "HBO",
-    size: "large",
-  },
-  {
-    id: 7,
-    title: "The Witcher",
-    image: "/placeholder.svg?height=400&width=300&text=The+Witcher",
-    platform: "Netflix",
-    size: "large",
-  },
-  {
-    id: 8,
-    title: "Succession",
-    image: "/placeholder.svg?height=400&width=300&text=Succession",
-    platform: "HBO",
-    size: "large",
-  },
-  {
-    id: 9,
-    title: "Westworld",
-    image: "/placeholder.svg?height=400&width=300&text=Westworld",
-    platform: "HBO",
-    size: "large",
-  },
-  {
-    id: 10,
-    title: "Dark",
-    image: "/placeholder.svg?height=400&width=300&text=Dark",
-    platform: "Netflix",
-    size: "large",
-  },
-  {
-    id: 11,
-    title: "Wednesday",
-    image: "/placeholder.svg?height=400&width=300&text=Wednesday",
-    platform: "Netflix",
-    size: "large",
-  },
-  {
-    id: 12,
-    title: "The Crown",
-    image: "/placeholder.svg?height=400&width=300&text=The+Crown",
-    platform: "Netflix",
-    size: "large",
-  },
-]
-
 export default function SearchPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeTab, setActiveTab] = useState("populares")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "")
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || "populares")
   const [showFilters, setShowFilters] = useState(false)
+
+  useEffect(() => {
+    const query = searchParams.get('q')
+    const tab = searchParams.get('tab')
+    
+    if (query) setSearchQuery(query)
+    if (tab) setActiveTab(tab)
+  }, [searchParams])
+
+  const updateURL = (newQuery: string, newTab?: string) => {
+    const params = new URLSearchParams()
+    
+    if (newQuery.trim()) {
+      params.set('q', newQuery)
+    }
+    
+    if (newTab || activeTab) {
+      params.set('tab', newTab || activeTab)
+    }
+
+    const url = params.toString() ? `/search?${params.toString()}` : '/search'
+    router.push(url, { scroll: false })
+  }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuery = e.target.value
+    setSearchQuery(newQuery)
+    updateURL(newQuery)
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      updateURL(searchQuery)
+    }
+  }
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+    updateURL(searchQuery, tabId)
+  }
 
   const toggleFilters = () => {
     setShowFilters(!showFilters)
@@ -120,7 +77,8 @@ export default function SearchPage() {
                 type="text"
                 placeholder="Buscar series, películas, géneros..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
+                onKeyPress={handleKeyPress}
                 className="w-full pl-12 pr-4 py-4 bg-[#292929] border border-[#3f3f3f] rounded-lg text-[#ffffff] placeholder-[#a1a1aa] focus:outline-none focus:border-[#0de383] focus:ring-1 focus:ring-[#0de383]"
               />
             </div>
@@ -223,7 +181,7 @@ export default function SearchPage() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`px-6 py-3 text-sm font-medium transition-colors ${
                     activeTab === tab.id
                       ? "bg-[#0de383] text-[#121212] rounded-lg"
@@ -235,13 +193,7 @@ export default function SearchPage() {
               ))}
             </div>
 
-            <SearchGrid showFilters={showFilters} results={mockSearchResults} />
-
-            <div className="flex justify-center mt-8">
-              <button className="px-6 py-3 border border-[#3f3f3f] rounded-lg text-[#a1a1aa] hover:text-[#ffffff] hover:bg-[#3f3f3f] transition-colors text-sm">
-                Cargar más
-              </button>
-            </div>
+            <SearchGrid showFilters={showFilters} searchQuery={searchQuery} activeTab={activeTab} />
           </div>
         </div>
       </div>

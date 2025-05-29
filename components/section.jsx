@@ -108,8 +108,8 @@ export default function Section({ title }) {
       </div>
       <div data-layer="Container" className="w-full">
         <div className="flex flex-row justify-start items-start gap-5 overflow-x-auto pb-4">
-          {shows.map(({ name, img, id }) => (
-            <Card key={id} id={id} name={name} img={img} />
+          {shows.map(({ name, img, id, type }) => (
+            <Card key={id} id={id} name={name} img={img} mediaType={type === 'película' ? 'movie' : 'tv'} />
           ))}
         </div>
       </div>

@@ -8,7 +8,7 @@ async function getWorkById(id, type) {
   const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&language=${LANGUAGE}`);
   if (!res.ok) return null;
   const data = await res.json();
-  return { ...data, tipo: type };
+  return { ...data, tipo: type === 'movie' ? 'película' : 'serie' };
 }
 
 export async function POST(req) {

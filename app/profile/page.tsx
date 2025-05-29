@@ -242,6 +242,7 @@ export default function ProfilePage() {
                 img={`/placeholder.svg?height=370&width=250&text=${show.title.replace(/\s+/g, "+")}`}
                 progress={show.progress}
                 platform={null}
+                mediaType="tv"
               />
             ))}
           </div>

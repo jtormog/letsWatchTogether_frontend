@@ -1,5 +1,5 @@
 "use client"
-import { useParams } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 import { useState, useEffect } from "react"
 
 interface ContentData {
@@ -27,10 +27,14 @@ interface ContentData {
       description?: string
     }>
   }>
+  runtime?: number | null
+  mediaType: string
 }
 
 export default function ContentDetailPage() {
   const params = useParams()
+  const searchParams = useSearchParams()
+  const mediaType = searchParams.get('type') || 'tv' // Default to 'tv' if not specified
   const [contentData, setContentData] = useState<ContentData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +53,10 @@ export default function ContentDetailPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ tvId: params.id }),
+          body: JSON.stringify({ 
+            tvId: params.id,
+            mediaType: mediaType 
+          }),
         })
 
         if (!response.ok) {
@@ -68,7 +75,7 @@ export default function ContentDetailPage() {
     if (params.id) {
       fetchContentData()
     }
-  }, [params.id])
+  }, [params.id, mediaType])
 
   if (loading) {
     return (
@@ -248,9 +255,9 @@ export default function ContentDetailPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
 
-        <div className="relative z-10 p-8 min-h-[60vh]">
-          <div className="flex gap-8 max-w-7xl mx-auto w-full h-full relative pl-80" style={{minHeight: '60vh'}}>
-            <div className="w-80 flex-shrink-0 absolute left-8 top-8 mr-12">
+        <div className="relative z-10 p-4 md:p-8 min-h-[60vh]">
+          <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto w-full h-full relative lg:pl-80" style={{minHeight: '60vh'}}>
+            <div className="w-full lg:w-80 flex-shrink-0 lg:absolute left-4 md:left-8 top-4 md:top-8 lg:mr-12">
               <div className="bg-[#27272a] border border-[#3f3f46] rounded-lg p-6">
                 <div className="relative mb-6">
                   <img
@@ -304,20 +311,31 @@ export default function ContentDetailPage() {
               </div>
             </div>
 
-            <div className="flex-1 max-w-2xl flex flex-col ml-16">
+            <div className="flex-1 max-w-2xl flex flex-col lg:ml-16 mt-8 lg:mt-0">
               <div className="flex flex-col">
-                <div className="flex flex-col mb-6 absolute top-12 max-w-xl">
-                  <h1 className="text-5xl font-bold mb-4">{contentData.title}</h1>
+                <div className="flex flex-col mb-6 pt-4 lg:pt-12 min-h-[200px]">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight break-words max-w-full">{contentData.title}</h1>
 
-                  <div className="flex items-center gap-2 mb-4 text-[#a1a1aa]">
+                  <div className="flex items-center gap-2 mb-4 text-[#a1a1aa] flex-wrap">
                     <span>{contentData.year}</span>
-                    <span>•</span>
-                    <span>{contentData.seasons} temporadas</span>
-                    <span>•</span>
-                    <span>{contentData.episodes} episodios</span>
+                    {contentData.mediaType === 'tv' ? (
+                      <>
+                        <span>•</span>
+                        <span>{contentData.seasons} temporadas</span>
+                        <span>•</span>
+                        <span>{contentData.episodes} episodios</span>
+                      </>
+                    ) : (
+                      contentData.runtime && (
+                        <>
+                          <span>•</span>
+                          <span>{contentData.runtime} min</span>
+                        </>
+                      )
+                    )}
                   </div>
 
-                  <div className="flex gap-2 mb-4">
+                  <div className="flex gap-2 mb-4 flex-wrap">
                     {contentData.genres.map((genre: string) => (
                       <span
                         key={genre}
@@ -328,11 +346,9 @@ export default function ContentDetailPage() {
                     ))}
                   </div>
                 </div>
-                
-                <div className="h-48"></div>
 
-                <div className="mb-6 w-full">
-                  <p className="text-lg text-[#ffffff] leading-relaxed">
+                <div className="mb-6 w-full min-h-[100px]">
+                  <p className="text-lg text-[#ffffff] leading-relaxed min-h-[80px]">
                     {isDescriptionExpanded 
                       ? contentData.description 
                       : truncateDescription(contentData.description)
@@ -350,7 +366,9 @@ export default function ContentDetailPage() {
 
                   {contentData.creator && (
                     <div className="mb-4">
-                      <h3 className="text-sm font-medium text-[#ffffff] mb-2">Creado por</h3>
+                      <h3 className="text-sm font-medium text-[#ffffff] mb-2">
+                        {contentData.mediaType === 'movie' ? 'Dirigida por' : 'Creado por'}
+                      </h3>
                       <p className="text-[#a1a1aa]">{contentData.creator}</p>
                     </div>
                   )}
@@ -378,9 +396,11 @@ export default function ContentDetailPage() {
 
       <div className="container mx-auto px-8">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-6">Temporadas</h2>
-          <div className="space-y-4">
-            {contentData.seasonsList.map((season: any) => (
+          {contentData.mediaType === 'tv' && contentData.seasonsList.length > 0 && (
+            <>
+              <h2 className="text-2xl font-semibold mb-6">Temporadas</h2>
+              <div className="space-y-4">
+                {contentData.seasonsList.map((season: any) => (
               <div key={season.season} className="bg-[#27272a] border border-[#3f3f46] rounded-lg overflow-hidden">
                 <div
                   className="p-4 hover:border-[#0de383] transition-colors cursor-pointer flex items-center justify-between"
@@ -473,6 +493,8 @@ export default function ContentDetailPage() {
               </div>
             ))}
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
