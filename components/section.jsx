@@ -24,7 +24,6 @@ export default function Section({ title }) {
 
         setShows(transformedData)
       } catch (err) {
-        console.error("Error fetching shows:", err)
         setError(err.message)
       } finally {
         setLoading(false)

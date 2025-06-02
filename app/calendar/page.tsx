@@ -45,10 +45,8 @@ export default function CalendarPage() {
         ]
         
         const nextEpisodes = await getNextEpisodesForUserSeries(userSeriesIds)
-        setEpisodes(nextEpisodes)
-      } catch (error) {
-        console.error('Error fetching next episodes:', error)
-      } finally {
+        setEpisodes(nextEpisodes)        } catch (error) {
+        }finally {
         setLoading(false)
       }
     }

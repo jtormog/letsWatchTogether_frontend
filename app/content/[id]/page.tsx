@@ -34,7 +34,7 @@ interface ContentData {
 export default function ContentDetailPage() {
   const params = useParams()
   const searchParams = useSearchParams()
-  const mediaType = searchParams.get('type') || 'tv' // Default to 'tv' if not specified
+  const mediaType = searchParams.get('type') || 'tv'
   const [contentData, setContentData] = useState<ContentData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

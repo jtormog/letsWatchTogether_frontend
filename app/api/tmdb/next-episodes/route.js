@@ -49,7 +49,6 @@ export async function POST(req) {
 
     return NextResponse.json(allEpisodes);
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

@@ -50,22 +50,86 @@ const mockUsers = {
 
 export async function GET(req) {
   try {
-    const { userId, error, status } = getUserIdFromRequest(req);
+    const { userId, error, status, token } = getUserIdFromRequest(req);
     
     if (error) {
       return NextResponse.json({ error }, { status });
     }
     
-    console.log('Available mock users:', Object.keys(mockUsers));
+    try {
+      const response = await fetch(`${process.env.LARAVEL_API_URL}/api/user/profile`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        
+        const transformedUser = {
+          id: userData.user.id.toString(),
+          name: userData.user.name,
+          username: userData.user.email,
+          email: userData.user.email,
+          avatar: userData.user.avatar || `/placeholder.svg?height=120&width=120&text=${userData.user.name.charAt(0)}`,
+          preferences: {
+            language: "es",
+            notifications: true,
+            autoplay: true
+          },
+          subscription: {
+            platforms: [],
+            plan: "basic"
+          },
+          stats: {
+            seriesVistas: 0,
+            peliculasVistas: 0,
+            episodiosVistos: 0,
+            amigos: 0
+          }
+        };
+
+        return NextResponse.json({
+          success: true,
+          user: transformedUser
+        });
+      }
+    } catch (apiError) {
+    }
+
+    let user = mockUsers[userId];
     
-    if (!mockUsers[userId]) {
-      console.log('User not found in mockUsers');
-      return unauthorizedResponse('Invalid token or user not found');
+    if (!user) {
+      user = {
+        id: userId,
+        name: "OAuth User",
+        username: "@oauthuser" + userId,
+        email: "oauth.user." + userId + "@example.com",
+        avatar: "/placeholder.svg?height=120&width=120&text=OU",
+        preferences: {
+          language: "es",
+          notifications: true,
+          autoplay: false
+        },
+        subscription: {
+          platforms: [],
+          plan: "basic"
+        },
+        stats: {
+          seriesVistas: 0,
+          peliculasVistas: 0,
+          episodiosVistos: 0,
+          amigos: 0
+        }
+      };
+      
+      mockUsers[userId] = user;
     }
 
     await new Promise(resolve => setTimeout(resolve, 200));
-
-    const user = mockUsers[userId];
 
     return NextResponse.json({
       success: true,
@@ -73,7 +137,6 @@ export async function GET(req) {
     });
 
   } catch (error) {
-    console.error('Profile fetch error:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

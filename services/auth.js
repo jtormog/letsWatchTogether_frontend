@@ -120,6 +120,15 @@ export async function login(credentials) {
 
     const data = await response.json();
     
+    if (data.user) {
+      localStorage.setItem('user_data', JSON.stringify({
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        avatar: data.user.avatar
+      }));
+    }
+    
     return data;
   } catch (error) {
     throw new Error(error.message || 'Ha habido un error al iniciar sesión');
@@ -135,8 +144,8 @@ export async function logout() {
       },
     });
   } catch (error) {
-    console.error('Error during logout:', error);
   } finally {
+    localStorage.removeItem('user_data');
     window.location.href = '/login';
   }
 }
@@ -149,8 +158,12 @@ export function isAuthenticated() {
     const authCookie = cookies.find(cookie => 
       cookie.trim().startsWith('auth-token=')
     );
+    const userIdCookie = cookies.find(cookie => 
+      cookie.trim().startsWith('user-id=')
+    );
     
-    return authCookie && authCookie.split('=')[1].trim() !== '';
+    return authCookie && authCookie.split('=')[1].trim() !== '' && 
+           userIdCookie && userIdCookie.split('=')[1].trim() !== '';
   } catch (error) {
     return false;
   }
@@ -289,21 +302,108 @@ export async function getUserStats() {
   }
 }
 
+export async function oauthLogin(provider) {
+  try {
+    const response = await fetch(`/api/auth/${provider}/redirect`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to get OAuth URL for ${provider}: ${response.status} ${response.statusText}`);
+    }
+
+    const redirectUrl = await response.json();
+    
+    const popup = window.open(
+      redirectUrl,
+      `${provider}_oauth`,
+      'width=600,height=600,scrollbars=yes,resizable=yes'
+    );
+
+    if (!popup) {
+      throw new Error('Popup blocked. Please allow popups for this site.');
+    }
+
+    return new Promise((resolve, reject) => {
+      let resolved = false;
+      
+      const messageHandler = (event) => {
+        
+        if (event.data.type === 'OAUTH_SUCCESS' && event.data.provider === provider) {
+          resolved = true;
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          if (!popup.closed) popup.close();
+          resolve({ 
+            success: true, 
+            token: event.data.token, 
+            user: event.data.user 
+          });
+        } else if (event.data.type === 'OAUTH_ERROR' && event.data.provider === provider) {
+          resolved = true;
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          if (!popup.closed) popup.close();
+          reject(new Error(event.data.error || 'OAuth authentication failed'));
+        } else if (event.data.type === 'POPUP_CLOSE' && event.data.provider === provider) {
+          if (!resolved) {
+            resolved = true;
+            clearInterval(checkClosed);
+            window.removeEventListener('message', messageHandler);
+            reject(new Error('OAuth authentication was cancelled'));
+          }
+        }
+      };
+      
+      window.addEventListener('message', messageHandler);
+      
+      const checkClosed = setInterval(() => {
+        if (popup.closed && !resolved) {
+          resolved = true;
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          if (isAuthenticated()) {
+            resolve({ success: true });
+          } else {
+            reject(new Error('OAuth authentication was cancelled or failed'));
+          }
+        }
+      }, 1000);
+
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          clearInterval(checkClosed);
+          window.removeEventListener('message', messageHandler);
+          if (!popup.closed) {
+            popup.close();
+          }
+          reject(new Error('OAuth authentication timed out'));
+        }
+      }, 300000);
+    });
+
+  } catch (error) {
+    throw new Error(error.message || `Ha habido un error al iniciar sesión con ${provider}`);
+  }
+}
+
 function getAuthToken() {
   if (typeof window === 'undefined') return '';
   
   try {
     const cookies = document.cookie.split(';');
-    console.log('All cookies:', cookies);
     const authCookie = cookies.find(cookie => 
       cookie.trim().startsWith('auth-token=')
     );
     
     const token = authCookie ? authCookie.split('=')[1].trim() : '';
-    console.log('Auth token found:', token);
     return token;
   } catch (error) {
-    console.error('Error getting auth token:', error);
     return '';
   }
 }

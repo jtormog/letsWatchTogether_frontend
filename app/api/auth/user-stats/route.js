@@ -49,7 +49,24 @@ export async function GET(req) {
     }
     
     if (!mockUserStats[userId]) {
-      return unauthorizedResponse('Invalid token or user not found');
+      mockUserStats[userId] = {
+        general: {
+          seriesVistas: 0,
+          peliculasVistas: 0,
+          episodiosVistos: 0,
+          amigos: 0,
+          horasVistas: 0
+        },
+        detailed: {
+          seriesCompletadas: 0,
+          seriesEnProgreso: 0,
+          episodiosEstaTemporada: 0,
+          recomendacionesRecibidas: 0,
+          recomendacionesHechas: 0,
+          generosFavoritos: ["Drama", "Comedy", "Action"],
+          plataformaMasUsada: "Netflix"
+        }
+      };
     }
 
     await new Promise(resolve => setTimeout(resolve, 200));
@@ -62,7 +79,6 @@ export async function GET(req) {
     });
 
   } catch (error) {
-    console.error('User stats fetch error:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

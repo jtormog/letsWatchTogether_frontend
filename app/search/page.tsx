@@ -81,10 +81,10 @@ function SearchPageContent() {
     
     if (query) {
       setSearchQuery(query)
-      setActiveTab('') // Clear active tab when searching
+      setActiveTab('')
     } else if (tab) {
       setActiveTab(tab)
-      setSearchQuery('') // Clear search when tab is active
+      setSearchQuery('')
     } else {
       setActiveTab('populares')
       setSearchQuery('')

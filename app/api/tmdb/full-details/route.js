@@ -14,8 +14,6 @@ export async function POST(req) {
   try {
     const { tvId, mediaType = 'tv' } = await req.json();
 
-    console.log(`Fetching details for ${mediaType === 'movie' ? 'película' : 'serie'} with ID: ${tvId}`);
-
     if (!tvId) {
       return NextResponse.json({ error: 'Missing tvId' }, { status: 400 });
     }
@@ -79,7 +77,6 @@ export async function POST(req) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ error: 'Error al obtener detalles' }, { status: 500 });
   }
 }

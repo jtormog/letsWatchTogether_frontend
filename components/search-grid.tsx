@@ -49,7 +49,6 @@ export default function SearchGrid({
   if (!searchData || searchData.results.length === 0) {
     return (
       <div className="flex justify-center items-center h-64">
-        {/* Sin mensaje de texto, solo espacio vacío */}
       </div>
     )
   }

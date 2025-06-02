@@ -74,7 +74,6 @@ export default function ProfilePage() {
             })
           }
         } catch (statsError) {
-          console.warn('Error obteniendo estadísticas:', statsError)
           setUserStats({
             series: profileResponse.user.stats.seriesVistas || 0,
             episodios: profileResponse.user.stats.episodiosVistos || 0,
@@ -98,7 +97,6 @@ export default function ProfilePage() {
             setLibraryShows(watchlistResponse.watchlist || [])
           }
         } catch (watchlistError) {
-          console.warn('Error obteniendo watchlist:', watchlistError)
         }
 
         try {
@@ -107,11 +105,9 @@ export default function ProfilePage() {
             setRecentHistory(historyResponse.history || [])
           }
         } catch (historyError) {
-          console.warn('Error obteniendo historial:', historyError)
         }
 
       } catch (error) {
-        console.error('Error obteniendo datos del perfil:', error)
         setError('Error al cargar los datos del perfil')
         
         setUserData({
@@ -147,7 +143,6 @@ export default function ProfilePage() {
       
       await updatePlatformSubscription(platform.name, newSubscribedState)
     } catch (error) {
-      console.error('Error actualizando suscripción de plataforma:', error)
       setPlatformSettings((prev) =>
         prev.map((p, i) => (i === index ? { ...p, subscribed: !newSubscribedState } : p))
       )

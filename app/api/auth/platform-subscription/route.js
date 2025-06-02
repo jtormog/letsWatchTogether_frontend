@@ -27,7 +27,6 @@ export async function PUT(req) {
     });
 
   } catch (error) {
-    console.error('Platform subscription update error:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

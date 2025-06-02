@@ -60,7 +60,6 @@ export async function GET(req) {
       totalResults: data.total_results
     });
   } catch (err) {
-    console.error(err);
     return NextResponse.json({ error: 'Error during search' }, { status: 500 });
   }
 }

@@ -51,7 +51,6 @@ export default function Banner() {
       
       setFriendsRecommendations(combinedData)
     } catch (err) {
-      console.error("Error fetching friends recommendations:", err)
       setError(err.message)
     } finally {
       setLoading(false)

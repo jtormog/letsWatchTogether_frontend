@@ -37,7 +37,6 @@ export async function GET(request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error('Error fetching popular content:', error);
     return NextResponse.json(
       { error: 'Failed to fetch popular content' },
       { status: 500 }
