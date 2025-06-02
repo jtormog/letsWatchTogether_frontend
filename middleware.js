@@ -4,7 +4,10 @@ import { validateAuthentication } from './app/lib/middleware-helpers.js';
 export function middleware(req) {
   const { pathname } = req.nextUrl;
   
+  // Rutas públicas que no requieren autenticación
   const publicRoutes = ['/login'];
+  
+  // Excluir rutas estáticas y de sistema de Next.js
   if (pathname.startsWith('/_next') || 
       pathname.startsWith('/api') ||
       pathname.includes('.') ||
@@ -12,16 +15,16 @@ export function middleware(req) {
     return NextResponse.next();
   }
 
-  const { isAuthenticated, authToken, userId, details } = validateAuthentication(req);
+  const { isAuthenticated } = validateAuthentication(req);
 
+  // Si estás autenticado y tratas de acceder al login, redirigir al inicio
   if (publicRoutes.includes(pathname) && isAuthenticated) {
-    const homeUrl = new URL('/', req.url);
-    return NextResponse.redirect(homeUrl);
+    return NextResponse.redirect(new URL('/', req.url));
   }
 
+  // Si NO estás autenticado y tratas de acceder a rutas protegidas, redirigir al login
   if (!publicRoutes.includes(pathname) && !isAuthenticated) {
-    const loginUrl = new URL('/login', req.url);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
   return NextResponse.next();

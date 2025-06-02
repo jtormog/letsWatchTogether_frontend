@@ -3,6 +3,7 @@ export function isValidAuthToken(token) {
     return false;
   }
   
+  // Patrón para tokens de Laravel Sanctum: número|caracteres
   const tokenPattern = /^\d+\|[a-zA-Z0-9]+$/;
   return tokenPattern.test(token.trim());
 }
@@ -26,12 +27,6 @@ export function validateAuthentication(req) {
   return {
     isAuthenticated: hasValidToken && hasValidUserId,
     authToken,
-    userId,
-    details: {
-      hasValidToken,
-      hasValidUserId,
-      tokenFormat: authToken ? 'Laravel Sanctum' : 'none',
-      userIdNum: userId ? parseInt(userId) : null
-    }
+    userId
   };
 }

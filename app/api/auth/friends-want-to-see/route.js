@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 
+// NOTA: Este endpoint mantiene datos mock porque Laravel NO tiene un endpoint equivalente
+// para obtener específicamente lo que los amigos quieren ver.
+// Para migrar a Laravel, se necesitaría crear un endpoint que combine:
+// - Sistema de amigos (ya existe en Laravel)
+// - Watchlists de amigos (no existe en Laravel)
+// - Filtrado por contenido que amigos quieren ver
+// Endpoints Laravel relacionados disponibles:
+// - api/user/friends/recommendations (recomendaciones de amigos, similar pero diferente)
+// - Sistema de amigos completo ya existe en Laravel
+
 const mockFriendsWantToSee = [
   {
     id: 66732,

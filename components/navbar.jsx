@@ -1,12 +1,14 @@
 "use client"
 
 import { useRouter, usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import clsx from "clsx"
 import Image from "next/image"
 import HomeIcon from "@/icons/HomeIcon"
 import SearchIcon from "@/icons/SearchIcon"
 import SocialIcon from "@/icons/SocialIcon"
 import CalendarIcon from "@/icons/CalendarIcon"
+import { getUserProfile } from "@/services/auth"
 
 const navItems = [
   {
@@ -65,10 +67,26 @@ const NavItem = ({ path, label, icon, isActive, onClick }) => {
 export default function Navbar() {
   const router = useRouter()
   const currentPath = usePathname()
+  const [userAvatar, setUserAvatar] = useState(null)
 
   const handleNavigation = (path) => {
     router.push(path)
   }
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const profileResponse = await getUserProfile()
+        if (profileResponse.success && profileResponse.user) {
+          setUserAvatar(profileResponse.user.avatar)
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error)
+      }
+    }
+
+    fetchUserData()
+  }, [])
   
   if (currentPath === '/login') {
     return null;
@@ -103,7 +121,7 @@ export default function Navbar() {
           onClick={() => handleNavigation("/profile")}
         >
           <Image
-            src="https://placehold.co/100x100/2E8B57/FFFFFF?text=JP"
+            src={userAvatar || "https://placehold.co/100x100/2E8B57/FFFFFF"}
             alt="User avatar"
             width={32}
             height={32}

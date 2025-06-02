@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getUserIdFromRequest, unauthorizedResponse } from '@/app/lib/auth';
 
+// NOTA: Este endpoint mantiene datos mock porque Laravel NO tiene un endpoint equivalente
+// para obtener el perfil completo del usuario con preferencias y configuración.
+// Para migrar a Laravel, se necesitaría crear un nuevo endpoint en Laravel que retorne:
+// - Datos básicos del usuario (nombre, email, avatar)
+// - Preferencias del usuario (idioma, notificaciones, autoplay)
+// - Suscripciones a plataformas
+// - Estadísticas básicas
+// Endpoints Laravel relacionados disponibles:
+// - No existe equivalente directo
+// - Podría combinarse con: api/user/platforms/subscribed + api/user/media-stats
+
 const mockUsers = {
   "1": {
     id: "1",

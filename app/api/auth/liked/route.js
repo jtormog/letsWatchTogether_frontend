@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server';
 
+// NOTA: Este endpoint mantiene datos mock porque Laravel NO tiene un endpoint equivalente
+// para gestionar contenido marcado como "me gusta" por el usuario.
+// Para migrar a Laravel, se necesitaría crear:
+// - POST api/user/liked (marcar contenido como favorito)
+// - GET api/user/liked (obtener contenido favorito del usuario)
+// - DELETE api/user/liked/{id} (quitar de favoritos)
+// Endpoints Laravel relacionados disponibles:
+// - Ninguno específico para sistema de "likes"
+
 const mockLiked = [
   {
     id: 278,

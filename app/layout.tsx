@@ -17,13 +17,7 @@ const inter = Inter({
   subsets: ["latin"],
 })
 
-export const metadata = {
-  title: "Let's Watch Together",
-  description: "Watch movies and TV shows with friends",
-    generator: 'v0.dev'
-}
-
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased overflow-x-hidden bg-black`}>

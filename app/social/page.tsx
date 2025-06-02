@@ -3,6 +3,14 @@
 import { useState } from "react"
 import SearchIcon from "@/icons/SearchIcon"
 
+// NOTA: Esta página usa datos mock porque Laravel SÍ tiene endpoints para gestionar amigos
+// pero no se están utilizando aquí. Para migrar a Laravel:
+// Endpoints Laravel disponibles:
+// - POST api/user/friend-request (enviar solicitud de amistad)
+// - PATCH api/user/friend-request/{friendshipId}/respond (responder solicitud)
+// - GET api/user/social (obtener datos sociales del usuario)
+// Esta página debería conectarse a estos endpoints para funcionalidad real de amigos.
+
 const mockUsers = [
   {
     id: 1,

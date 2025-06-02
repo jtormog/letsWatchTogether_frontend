@@ -1,84 +1,87 @@
 import { NextResponse } from 'next/server';
 import { getUserIdFromRequest, unauthorizedResponse } from '@/app/lib/auth';
 
-const mockUserStats = {
-  "1": {
-    general: {
-      seriesVistas: 30,
-      peliculasVistas: 45,
-      episodiosVistos: 156,
-      amigos: 18,
-      horasVistas: 127
-    },
-    detailed: {
-      seriesCompletadas: 12,
-      seriesEnProgreso: 18,
-      episodiosEstaTemporada: 24,
-      recomendacionesRecibidas: 84,
-      recomendacionesHechas: 23,
-      generosFavoritos: ["Drama", "Thriller", "Sci-Fi"],
-      plataformaMasUsada: "Netflix"
-    }
-  },
-  "2": {
-    general: {
-      seriesVistas: 42,
-      peliculasVistas: 28,
-      episodiosVistos: 203,
-      amigos: 25,
-      horasVistas: 189
-    },
-    detailed: {
-      seriesCompletadas: 15,
-      seriesEnProgreso: 27,
-      episodiosEstaTemporada: 31,
-      recomendacionesRecibidas: 67,
-      recomendacionesHechas: 41,
-      generosFavoritos: ["Comedy", "Drama", "Romance"],
-      plataformaMasUsada: "HBO"
-    }
-  }
-};
-
 export async function GET(req) {
   try {
-    const { userId, error, status } = getUserIdFromRequest(req);
+    const authHeader = req.headers.get('authorization');
+    let token = null;
     
-    if (error) {
-      return NextResponse.json({ error }, { status });
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.replace('Bearer ', '');
+    } else {
+      const cookies = req.cookies.get('auth-token');
+      token = cookies?.value;
     }
-    
-    if (!mockUserStats[userId]) {
-      mockUserStats[userId] = {
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' }, 
+        { status: 401 }
+      );
+    }
+
+    try {
+      // Llamada a Laravel API para obtener estadísticas reales
+      const laravelResponse = await fetch(`${process.env.LARAVEL_API_URL}/api/user/media-stats`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!laravelResponse.ok) {
+        if (laravelResponse.status === 401) {
+          return NextResponse.json(
+            { error: 'Authentication expired' }, 
+            { status: 401 }
+          );
+        }
+        
+        return NextResponse.json(
+          { error: 'Failed to fetch user stats' }, 
+          { status: laravelResponse.status }
+        );
+      }
+
+      const laravelData = await laravelResponse.json();
+      
+      // Transformar datos de Laravel al formato esperado por el frontend
+      const transformedStats = {
         general: {
-          seriesVistas: 0,
-          peliculasVistas: 0,
-          episodiosVistos: 0,
-          amigos: 0,
-          horasVistas: 0
+          seriesVistas: laravelData.total_series || 0,
+          peliculasVistas: laravelData.total_movies || 0,
+          episodiosVistos: laravelData.total_episodes || 0,
+          amigos: laravelData.friends_count || 0,
+          horasVistas: laravelData.total_hours || 0
         },
         detailed: {
-          seriesCompletadas: 0,
-          seriesEnProgreso: 0,
-          episodiosEstaTemporada: 0,
-          recomendacionesRecibidas: 0,
-          recomendacionesHechas: 0,
-          generosFavoritos: ["Drama", "Comedy", "Action"],
-          plataformaMasUsada: "Netflix"
+          seriesCompletadas: laravelData.completed_series || 0,
+          seriesEnProgreso: laravelData.in_progress_series || 0,
+          episodiosEstaTemporada: laravelData.episodes_this_season || 0,
+          recomendacionesRecibidas: laravelData.recommendations_received || 0,
+          recomendacionesHechas: laravelData.recommendations_made || 0,
+          generosFavoritos: laravelData.favorite_genres || ["Drama", "Comedy", "Action"],
+          plataformaMasUsada: laravelData.most_used_platform || "Netflix"
         }
       };
+
+      return NextResponse.json({
+        success: true,
+        stats: transformedStats
+      });
+
+    } catch (fetchError) {
+      console.error('Laravel API error:', fetchError);
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
     }
 
-    await new Promise(resolve => setTimeout(resolve, 200));
-
-    const stats = mockUserStats[userId];
-
-    return NextResponse.json({
-      success: true,
-      stats
-    });
-
   } catch (error) {
+    console.error('User stats error:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
