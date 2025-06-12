@@ -162,6 +162,38 @@ export async function login(credentials) {
   }
 }
 
+export async function register(credentials) {
+  try {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Error en el registro');
+    }
+
+    const data = await response.json();
+    
+    if (data.user) {
+      localStorage.setItem('user_data', JSON.stringify({
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        avatar: data.user.avatar
+      }));
+    }
+    
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Ha habido un error al registrarse');
+  }
+}
+
 export async function logout() {
   try {
     await fetch('/api/auth/logout', {

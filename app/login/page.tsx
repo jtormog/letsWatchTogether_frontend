@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { login, isAuthenticated, oauthLogin } from "@/services/auth"
+import { login, register, isAuthenticated, oauthLogin } from "@/services/auth"
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("login")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const router = useRouter()
 
   useEffect(() => {
@@ -19,21 +22,81 @@ export default function LoginPage() {
     }
   }, [])
 
+  // Limpiar campos cuando se cambie de pestaña
+  useEffect(() => {
+    setEmail("")
+    setPassword("")
+    setName("")
+    setConfirmPassword("")
+    setError("")
+    setSuccess("")
+  }, [activeTab])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
+    setSuccess("")
 
     try {
-      const result = await login({ username: email, password })
+      let result
+      
+      if (activeTab === "login") {
+        result = await login({ username: email, password })
+      } else {
+        // Validaciones para registro
+        if (!name.trim()) {
+          setError('El nombre es requerido')
+          return
+        }
+        
+        if (name.length > 255) {
+          setError('El nombre no puede exceder 255 caracteres')
+          return
+        }
+        
+        if (!email.trim()) {
+          setError('El email es requerido')
+          return
+        }
+        
+        if (email.length > 255) {
+          setError('El email no puede exceder 255 caracteres')
+          return
+        }
+        
+        if (password !== confirmPassword) {
+          setError('Las contraseñas no coinciden')
+          return
+        }
+        
+        if (password.length < 8) {
+          setError('La contraseña debe tener al menos 8 caracteres')
+          return
+        }
+        
+        result = await register({ 
+          name: name.trim(), 
+          email: email.trim(), 
+          password, 
+          password_confirmation: confirmPassword 
+        })
+      }
       
       if (result.success) {
-        router.push('/')
+        if (activeTab === "register") {
+          setSuccess('¡Registro exitoso! Redirigiendo...')
+          setTimeout(() => {
+            router.push('/')
+          }, 1500)
+        } else {
+          router.push('/')
+        }
       } else {
-        setError('Credenciales inválidas')
+        setError(activeTab === "login" ? 'Credenciales inválidas' : 'Error en el registro')
       }
     } catch (error: any) {
-      setError(error.message || 'Error al iniciar sesión')
+      setError(error.message || (activeTab === "login" ? 'Error al iniciar sesión' : 'Error al registrarse'))
     } finally {
       setIsLoading(false)
     }
@@ -91,6 +154,26 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+          
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-md p-3 text-green-400 text-sm">
+              {success}
+            </div>
+          )}
+          
+          {activeTab === "register" && (
+            <div>
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-[#3f3f3f] border border-[#767676] rounded-md text-[#ffffff] placeholder-[#a3a3a3] focus:outline-none focus:border-[#0de383] focus:ring-1 focus:ring-[#0de383]"
+              />
+            </div>
+          )}
+          
           <div>
             <input
               type="email"
@@ -112,18 +195,37 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="remember"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 text-[#0de383] bg-[#3f3f3f] border-[#767676] rounded focus:ring-[#0de383] focus:ring-2"
-            />
-            <label htmlFor="remember" className="ml-2 text-sm text-[#a1a1aa]">
-              Recordarme
-            </label>
-          </div>
+          {activeTab === "register" && (
+            <div>
+              <input
+                type="password"
+                placeholder="Confirmar contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-[#3f3f3f] border border-[#767676] rounded-md text-[#ffffff] placeholder-[#a3a3a3] focus:outline-none focus:border-[#0de383] focus:ring-1 focus:ring-[#0de383]"
+              />
+              <div className="mt-2 text-xs text-[#a1a1aa]">
+                <p>• La contraseña debe tener al menos 8 caracteres</p>
+                <p>• Las contraseñas deben coincidir</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "login" && (
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-[#0de383] bg-[#3f3f3f] border-[#767676] rounded focus:ring-[#0de383] focus:ring-2"
+              />
+              <label htmlFor="remember" className="ml-2 text-sm text-[#a1a1aa]">
+                Recordarme
+              </label>
+            </div>
+          )}
 
           <button
             type="submit"
@@ -136,10 +238,10 @@ export default function LoginPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Cargando...
+                {activeTab === "login" ? "Iniciando sesión..." : "Registrando..."}
               </span>
             ) : (
-              activeTab === "login" ? "Iniciar Sesión" : "Registrarse"
+              activeTab === "login" ? "Iniciar Sesión" : "Crear Cuenta"
             )}
           </button>
         </form>
