@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { getNextEpisodesForUserSeries } from "@/services/tmdb"
+import { getUserWatching, getUserProfile } from "@/services/auth"
 
 interface Episode {
   serieId: number
@@ -35,18 +36,47 @@ export default function CalendarPage() {
   const [episodes, setEpisodes] = useState<Episode[]>([])
   const [loading, setLoading] = useState(true)
   const [showMoreEpisodes, setShowMoreEpisodes] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+  // Fetch next episodes from user's watching list instead of hardcoded series IDs
   useEffect(() => {
     async function fetchNextEpisodes() {
       try {
         setLoading(true)
-        const userSeriesIds = [
-          1399, 119051, 76479, 84958, 94997, 60735, 37854
-        ]
+        setError(null)
+        
+        // Obtener el perfil del usuario para conseguir su ID
+        const profileResponse = await getUserProfile()
+        if (!profileResponse.success) {
+          setError('No se pudo obtener el perfil del usuario. Por favor, inicia sesión.')
+          setEpisodes([])
+          return
+        }
+        
+        const userId = profileResponse.user.id
+        const userWatching = await getUserWatching(userId, 50) // Obtener hasta 50 series
+        
+        // Filtrar solo las series de TV (no películas) y extraer sus IDs
+        const userSeriesIds = userWatching
+          .filter((item: any) => item.mediaType === 'tv')
+          .map((item: any) => item.id)
+        
+        if (userSeriesIds.length === 0) {
+          setEpisodes([])
+          return
+        }
         
         const nextEpisodes = await getNextEpisodesForUserSeries(userSeriesIds)
-        setEpisodes(nextEpisodes)        } catch (error) {
-        }finally {
+        setEpisodes(nextEpisodes)
+      } catch (error: any) {
+        console.error('Error fetching next episodes:', error)
+        if (error.message?.includes('Authentication') || error.message?.includes('Unauthorized')) {
+          setError('Necesitas iniciar sesión para ver tu calendario personalizado.')
+        } else {
+          setError('Error al cargar los próximos episodios. Inténtalo de nuevo.')
+        }
+        setEpisodes([])
+      } finally {
         setLoading(false)
       }
     }
@@ -285,7 +315,19 @@ export default function CalendarPage() {
             </div>
           )}
           {loading ? (
-            <div className="text-center text-[#a1a1aa]">Cargando próximos episodios...</div>
+            <div className="text-center text-[#a1a1aa]">Cargando próximos episodios de las series que estás viendo...</div>
+          ) : error ? (
+            <div className="text-center text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-4">
+              <p className="mb-2">{error}</p>
+              {error.includes('iniciar sesión') && (
+                <Link 
+                  href="/login"
+                  className="inline-block px-4 py-2 bg-[#0de383] text-[#121212] rounded-lg font-medium hover:bg-[#0de383]/80 transition-colors"
+                >
+                  Iniciar Sesión
+                </Link>
+              )}
+            </div>
           ) : (
             <div className="grid gap-4">
               {episodesToShow.map((episode: Episode) => (
@@ -317,11 +359,22 @@ export default function CalendarPage() {
                   </div>
                 </div>
               ))}
-              {episodesToShow.length === 0 && !loading && (
+              {episodesToShow.length === 0 && !loading && !error && (
                 <div className="text-center text-[#a1a1aa]">
                   {selectedDate 
                     ? "No hay episodios programados para este día"
-                    : "No hay próximos episodios programados para este mes o posteriores"
+                    : (
+                      <div className="space-y-3">
+                        <p>No hay próximos episodios programados.</p>
+                        <p>Agrega algunas series a tu lista de 'Viendo' para ver sus próximos episodios aquí.</p>
+                        <Link 
+                          href="/search?tab=populares"
+                          className="inline-block px-4 py-2 bg-[#0de383] text-[#121212] rounded-lg font-medium hover:bg-[#0de383]/80 transition-colors"
+                        >
+                          Explorar Series
+                        </Link>
+                      </div>
+                    )
                   }
                 </div>
               )}

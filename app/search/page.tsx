@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import SearchIcon from "@/icons/SearchIcon"
 import SearchGrid from "@/components/search-grid"
 import { searchContent, getWorksByIds } from "@/services/tmdb"
-import { getUserLiked, getUserWatchlist } from "@/services/auth"
+import { getUserLiked, getUserWatchlist, getFriendsWantToSee, getUserWatching, getUserCompleted, getUserPlanned, getUserRecommendations } from "@/services/auth"
 
 interface SearchResult {
   id: number
@@ -137,27 +137,18 @@ function SearchPageContent() {
               break
 
             case 'recomendadas':
-              const friendsIds = [
-                { id: 299536, type: 'movie' },
-                { id: 94997, type: 'tv' },
-                { id: 157336, type: 'movie' },
-                { id: 60735, type: 'tv' },
-                { id: 634649, type: 'movie' }
-              ]
-              
-              const recommendationsData = await getWorksByIds(friendsIds)
+              const friendsRecommendations = await getUserRecommendations(userId, 20)
 
-              const formattedRecommendations = recommendationsData.map((item: any) => ({
+              const formattedRecommendations = friendsRecommendations.map((item: any) => ({
                 id: item.id,
-                title: item.title || item.name,
+                title: item.title,
                 overview: item.overview,
-                poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
-                mediaType: item.tipo === 'película' ? 'movie' : 'tv',
-                year: item.release_date ? new Date(item.release_date).getFullYear().toString() : 
-                      item.first_air_date ? new Date(item.first_air_date).getFullYear().toString() : null,
-                popularity: item.popularity,
-                voteAverage: item.vote_average,
-                releaseDate: item.release_date || item.first_air_date
+                poster: item.poster,
+                mediaType: item.mediaType,
+                year: item.year,
+                popularity: undefined,
+                voteAverage: undefined,
+                releaseDate: undefined
               }))
 
               data = {
@@ -169,19 +160,62 @@ function SearchPageContent() {
               break
 
             case 'me-gusta':
-              const liked = await getUserLiked(userId)
+              const likedWorks = await getUserLiked(userId)
 
-              data = {
-                results: liked,
-                totalPages: 1,
-                currentPage: 1,
-                totalResults: liked.length
+              if (likedWorks && likedWorks.length > 0) {
+                // Usar el endpoint get-by-id para obtener detalles completos
+                const response = await fetch('/api/tmdb/get-by-id', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ works: likedWorks })
+                })
+
+                if (response.ok) {
+                  const tmdbData = await response.json()
+                  
+                  const formattedLiked = tmdbData.map((item: any) => ({
+                    id: item.id,
+                    title: item.title || item.name,
+                    overview: item.overview,
+                    poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+                    mediaType: item.tipo === 'película' ? 'movie' : 'tv',
+                    year: item.release_date ? new Date(item.release_date).getFullYear().toString() : 
+                          item.first_air_date ? new Date(item.first_air_date).getFullYear().toString() : null,
+                    popularity: item.popularity,
+                    voteAverage: item.vote_average,
+                    releaseDate: item.release_date || item.first_air_date
+                  }))
+
+                  data = {
+                    results: formattedLiked,
+                    totalPages: 1,
+                    currentPage: 1,
+                    totalResults: formattedLiked.length
+                  }
+                } else {
+                  // Fallback si falla el procesamiento
+                  data = {
+                    results: [],
+                    totalPages: 1,
+                    currentPage: 1,
+                    totalResults: 0
+                  }
+                }
+              } else {
+                data = {
+                  results: [],
+                  totalPages: 1,
+                  currentPage: 1,
+                  totalResults: 0
+                }
               }
               break
 
-            case 'siguiendo':
-              const watchlist = await getUserWatchlist(userId)
-              const formattedWatchlist = watchlist.map((item: any) => ({
+            case 'viendo':
+              const watching = await getUserWatching(userId, 20)
+              const formattedWatching = watching.map((item: any) => ({
                 id: item.id,
                 title: item.title,
                 overview: item.overview,
@@ -191,14 +225,14 @@ function SearchPageContent() {
                 popularity: item.popularity,
                 voteAverage: item.voteAverage,
                 releaseDate: item.releaseDate,
-                progress: item.mediaType === 'tv' ? item.progress : undefined
+                status: 'watching'
               }))
 
               data = {
-                results: formattedWatchlist,
+                results: formattedWatching,
                 totalPages: 1,
                 currentPage: 1,
-                totalResults: formattedWatchlist.length
+                totalResults: formattedWatching.length
               }
               break
 
@@ -277,9 +311,9 @@ function SearchPageContent() {
 
   const tabs = [
     { id: "populares", label: "Populares" },
-    { id: "siguiendo", label: "Siguiendo" },
     { id: "me-gusta", label: "Me gusta" },
     { id: "recomendadas", label: "Recomendadas" },
+    { id: "viendo", label: "Viendo" },
   ]
 
   if (error) {

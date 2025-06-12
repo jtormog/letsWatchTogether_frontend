@@ -47,7 +47,7 @@ export async function POST(req) {
       name: authData.user.name,
       username: authData.user.email,
       email: authData.user.email,
-      avatar: authData.user.avatar || "/placeholder.svg?height=120&width=120&text=" + authData.user.name.charAt(0),
+      avatar: authData.user.avatar || "https://via.placeholder.com/120x120/0de383/000000?text=" + authData.user.name.charAt(0),
       subscription: {
         platforms: []
       },

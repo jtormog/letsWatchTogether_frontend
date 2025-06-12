@@ -1,15 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUserIdFromRequest, unauthorizedResponse } from '@/app/lib/auth';
 
-// NOTA: Este endpoint mantiene datos mock porque Laravel NO tiene un endpoint equivalente
-// para obtener el historial reciente de visualización del usuario.
-// Para migrar a Laravel, se necesitaría crear:
-// - Sistema de tracking de episodios/películas vistas
-// - GET api/user/recent-history (historial reciente de visionado)
-// - POST api/user/watch-progress (registrar progreso de visionado)
-// Endpoints Laravel relacionados disponibles:
-// - Ninguno específico para historial de visionado
-
 const mockRecentHistory = {
   "1": [
     {

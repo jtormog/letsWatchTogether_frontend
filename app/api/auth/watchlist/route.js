@@ -1,14 +1,5 @@
 import { NextResponse } from 'next/server';
 
-// NOTA: Este endpoint mantiene datos mock porque Laravel NO tiene un endpoint equivalente
-// para gestionar la lista de seguimiento (watchlist) del usuario.
-// Para migrar a Laravel, se necesitaría crear:
-// - POST api/user/watchlist (añadir contenido a watchlist)
-// - GET api/user/watchlist (obtener watchlist del usuario)
-// - DELETE api/user/watchlist/{id} (eliminar de watchlist)
-// Endpoints Laravel relacionados disponibles:
-// - api/user/media/{status} (podría usarse para contenido "plan to watch")
-
 const mockWatchlist = [
 	{
 		id: 157336,

@@ -121,7 +121,7 @@ export default function Navbar() {
           onClick={() => handleNavigation("/profile")}
         >
           <Image
-            src={userAvatar || "https://placehold.co/100x100/2E8B57/FFFFFF"}
+            src={userAvatar || "https://via.placeholder.com/32x32/0de383/000000?text=U"}
             alt="User avatar"
             width={32}
             height={32}

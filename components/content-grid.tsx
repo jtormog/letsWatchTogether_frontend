@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import Card from "./card"
 
 interface Show {
@@ -17,15 +18,22 @@ interface ContentGridProps {
   loading: boolean
   error?: string | null
   limit?: number
+  seeMoreLink?: string
 }
 
-export default function ContentGrid({ title, shows, loading, error, limit = 5 }: ContentGridProps) {
+export default function ContentGrid({ title, shows, loading, error, limit = 5, seeMoreLink }: ContentGridProps) {
   if (loading) {
     return (
       <div className="w-full">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-white text-2xl font-semibold">{title}</h2>
-          <button className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">Ver más</button>
+          {seeMoreLink ? (
+            <Link href={seeMoreLink} className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">
+              Ver más
+            </Link>
+          ) : (
+            <button className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">Ver más</button>
+          )}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           {[...Array(limit)].map((_, index) => (
@@ -44,7 +52,13 @@ export default function ContentGrid({ title, shows, loading, error, limit = 5 }:
       <div className="w-full">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-white text-2xl font-semibold">{title}</h2>
-          <button className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">Ver más</button>
+          {seeMoreLink ? (
+            <Link href={seeMoreLink} className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">
+              Ver más
+            </Link>
+          ) : (
+            <button className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">Ver más</button>
+          )}
         </div>
         <div className="text-red-400 text-sm">Error al cargar contenido: {error}</div>
       </div>
@@ -55,7 +69,13 @@ export default function ContentGrid({ title, shows, loading, error, limit = 5 }:
     <div className="w-full">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-white text-2xl font-semibold">{title}</h2>
-        <button className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">Ver más</button>
+        {seeMoreLink ? (
+          <Link href={seeMoreLink} className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">
+            Ver más
+          </Link>
+        ) : (
+          <button className="text-[#0de383] text-sm hover:text-[#0de383]/80 transition-colors">Ver más</button>
+        )}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {shows.map((item) => (
@@ -64,7 +84,6 @@ export default function ContentGrid({ title, shows, loading, error, limit = 5 }:
             id={item.id} 
             name={item.name} 
             img={item.img} 
-            platform={item.platform} 
             progress={item.progress}
             mediaType={item.type === 'película' ? 'movie' : 'tv'}
           />

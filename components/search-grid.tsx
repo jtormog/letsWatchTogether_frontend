@@ -61,8 +61,7 @@ export default function SearchGrid({
             <Card 
               id={item.id} 
               name={item.title} 
-              img={item.poster || "/placeholder.svg"} 
-              platform={null} 
+              img={item.poster || "https://via.placeholder.com/250x370/1a1a1a/ffffff?text=No+Image"} 
               progress={item.progress || null} 
               mediaType={item.mediaType}
             />

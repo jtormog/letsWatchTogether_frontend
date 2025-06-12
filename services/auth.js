@@ -1,21 +1,28 @@
-export async function getUserRecommendations(userId) {
+export async function getUserRecommendations(userId, limit = 20) {
   try {
     const response = await fetch('/api/auth/recommendations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
       },
-      body: JSON.stringify({ userId }),
+      credentials: 'include',
+      body: JSON.stringify({ userId, limit }),
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for recommendations');
+        return [];
+      }
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    throw new Error('Ha habido un error al obtener las recomendaciones del usuario');
+    console.warn('Error fetching recommendations:', error.message);
+    return [];
   }
 }
 
@@ -25,39 +32,52 @@ export async function getUserWatchlist(userId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
       },
+      credentials: 'include',
       body: JSON.stringify({ userId }),
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for watchlist');
+        return [];
+      }
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    throw new Error('Ha habido un error al obtener la lista de seguimiento del usuario');
+    console.warn('Error fetching watchlist:', error.message);
+    return [];
   }
 }
 
 export async function getUserLiked(userId) {
   try {
     const response = await fetch('/api/auth/liked', {
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
       },
-      body: JSON.stringify({ userId }),
+      credentials: 'include',
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for liked content');
+        return [];
+      }
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    throw new Error('Ha habido un error al obtener el contenido con "me gusta" del usuario');
+    console.warn('Error fetching liked content:', error.message);
+    return [];
   }
 }
 
@@ -67,18 +87,25 @@ export async function getFriendsWantToSee(userId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
       },
+      credentials: 'include',
       body: JSON.stringify({ userId }),
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for friends recommendations');
+        return [];
+      }
       throw new Error(`API request failed: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    throw new Error('Ha habido un error al obtener lo que los amigos quieren ver');
+    console.warn('Error fetching friends want to see:', error.message);
+    return [];
   }
 }
 
@@ -389,6 +416,326 @@ export async function oauthLogin(provider) {
 
   } catch (error) {
     throw new Error(error.message || `Ha habido un error al iniciar sesión con ${provider}`);
+  }
+}
+
+export async function getUserWatching(userId, limit = 20) {
+  try {
+    const response = await fetch('/api/auth/watching', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ userId, limit }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for watching list');
+        return [];
+      }
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.warn('Error fetching watching list:', error.message);
+    return [];
+  }
+}
+
+export async function getUserCompleted(userId) {
+  try {
+    const response = await fetch('/api/auth/completed', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for completed list');
+        return [];
+      }
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.warn('Error fetching completed list:', error.message);
+    return [];
+  }
+}
+
+export async function getUserPlanned(userId) {
+  try {
+    const response = await fetch('/api/auth/planned', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ userId }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for planned list');
+        return [];
+      }
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.warn('Error fetching planned list:', error.message);
+    return [];
+  }
+}
+
+export async function getUserSocial() {
+  try {
+    const response = await fetch('/api/auth/social', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for social data');
+        return { friends: [], friendRequests: [], pendingRequests: [] };
+      }
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.data || { friends: [], friendRequests: [], pendingRequests: [] };
+  } catch (error) {
+    console.warn('Error fetching social data:', error.message);
+    return { friends: [], friendRequests: [], pendingRequests: [] };
+  }
+}
+
+export async function sendFriendRequest(email) {
+  try {
+    const response = await fetch('/api/auth/friend-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Error al enviar solicitud de amistad');
+  }
+}
+
+export async function getReceivedFriendRequests(status = 'pending') {
+  try {
+    const response = await fetch(`/api/auth/friend-requests/received?status=${status}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for received friend requests');
+        return [];
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.error || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.warn('Error fetching received friend requests:', error.message);
+    return [];
+  }
+}
+
+export async function getSentFriendRequests(status = 'pending') {
+  try {
+    const response = await fetch(`/api/auth/friend-requests/sent?status=${status}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for sent friend requests');
+        return [];
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.error || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.warn('Error fetching sent friend requests:', error.message);
+    return [];
+  }
+}
+
+export async function respondToFriendRequest(friendshipId, action) {
+  try {
+    const response = await fetch(`/api/auth/friend-request/${friendshipId}/respond`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ action }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Error al responder a la solicitud de amistad');
+  }
+}
+
+// Watch Invitation Functions
+export async function sendWatchInvitation(friendId, tmdbId, mediaType = 'movie') {
+  try {
+    const response = await fetch('/api/auth/watch-invitation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ friend_id: friendId, tmdb_id: tmdbId, media_type: mediaType }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Error al enviar invitación para ver juntos');
+  }
+}
+
+export async function respondToWatchInvitation(invitationId, action) {
+  try {
+    const response = await fetch(`/api/auth/watch-invitation/${invitationId}/respond`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+      body: JSON.stringify({ action }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error(error.message || 'Error al responder a la invitación para ver juntos');
+  }
+}
+
+export async function getReceivedWatchInvitations(status = 'pending') {
+  try {
+    const response = await fetch(`/api/auth/watch-invitations/received/${status}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for received watch invitations');
+        return { success: false, data: [], message: 'Authentication required' };
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.warn('Error fetching received watch invitations:', error.message);
+    return { success: false, data: [], message: error.message };
+  }
+}
+
+export async function getSentWatchInvitations(status = 'pending') {
+  try {
+    const response = await fetch(`/api/auth/watch-invitations/sent/${status}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getAuthToken()}`
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        console.warn('User not authenticated for sent watch invitations');
+        return { success: false, data: [], message: 'Authentication required' };
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.message || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.warn('Error fetching sent watch invitations:', error.message);
+    return { success: false, data: [], message: error.message };
   }
 }
 

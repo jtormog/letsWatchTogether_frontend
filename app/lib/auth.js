@@ -24,13 +24,15 @@ export function getUserIdFromRequest(req) {
     
     if (!userId) {
       return { 
-        error: 'Invalid token format',
+        error: 'Unauthorized - Invalid session',
         status: 401
       };
     }
 
+    console.log(`Auth success: User ${userId} authenticated`);
     return { userId, token };
   } catch (error) {
+    console.log('Auth error: Exception during authentication:', error);
     return { 
       error: 'Internal server error',
       status: 500

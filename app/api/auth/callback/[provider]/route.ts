@@ -148,7 +148,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
           name: user.name,
           username: user.email,
           email: user.email,
-          avatar: user.avatar || "/placeholder.svg?height=120&width=120&text=" + user.name.charAt(0),
+          avatar: user.avatar || "https://via.placeholder.com/120x120/0de383/000000?text=" + user.name.charAt(0),
           subscription: {
             platforms: []
           },
@@ -215,7 +215,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ prov
           name: user.name,
           username: user.email,
           email: user.email,
-          avatar: user.avatar || "/placeholder.svg?height=120&width=120&text=" + user.name.charAt(0),
+          avatar: user.avatar || "https://via.placeholder.com/120x120/0de383/000000?text=" + user.name.charAt(0),
           subscription: {
             platforms: []
           },

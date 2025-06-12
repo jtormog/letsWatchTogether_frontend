@@ -113,7 +113,7 @@ export default function ProfilePage() {
         setUserData({
           name: "Usuario",
           username: "@usuario",
-          avatar: "/placeholder.svg?height=120&width=120&text=U"
+          avatar: "/api/placeholder?width=120&height=120&text=U"
         })
         setUserStats({
           series: 0,
@@ -225,7 +225,7 @@ export default function ProfilePage() {
             <div className="bg-[#292929] rounded-lg p-6 border border-[#3f3f3f]">
               <div className="flex flex-col items-center text-center">
                 <img
-                  src={userData?.avatar || "/placeholder.svg"}
+                  src={userData?.avatar || "/api/placeholder?width=96&height=96&text=U"}
                   alt={userData?.name || "Usuario"}
                   className="w-24 h-24 rounded-full object-cover border-4 border-[#0de383] mb-4"
                 />

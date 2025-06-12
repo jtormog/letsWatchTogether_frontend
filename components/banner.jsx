@@ -40,11 +40,11 @@ export default function Banner() {
             title: tmdbItem.title,
             description: tmdbItem.overview,
             type: tmdbItem.mediaType,
-            backgroundImage: tmdbItem.poster || "/placeholder.svg?height=1080&width=1920&text=" + encodeURIComponent(tmdbItem.title),
+            backgroundImage: tmdbItem.poster || "/api/placeholder?width=1920&height=1080&text=" + encodeURIComponent(tmdbItem.title),
           },
           recommendator: {
             userName: friendData?.friendName || "Amigo",
-            profileImage: friendData?.friendAvatar || "/placeholder.svg?height=100&width=100&text=A",
+            profileImage: friendData?.friendAvatar || "/api/placeholder?width=100&height=100&text=A",
           },
         }
       })
@@ -154,7 +154,7 @@ export default function Banner() {
       <div className="self-stretch relative w-full h-0 pb-[43.75%]">
         <div className="w-full h-full absolute inset-0 flex flex-col justify-center items-center bg-gray-800">
           <div className="text-white text-xl mb-4">
-            {error ? "Error al cargar recomendaciones" : "No hay recomendaciones disponibles"}
+            {error ? 'Error al cargar mis amigos quieren ver' : 'Mis amigos quieren ver no está disponible'}
           </div>
           <div className="text-gray-400 text-sm mb-4">
             {error ? error : "Intenta recargar la página"}
@@ -177,7 +177,7 @@ export default function Banner() {
       <div className="w-full h-full absolute inset-0 flex flex-col justify-start items-start overflow-hidden">
         <img
           className="w-full h-full object-cover"
-          src={currentSeries.media.backgroundImage || "/placeholder.svg"}
+          src={currentSeries.media.backgroundImage || "/api/placeholder?width=1920&height=1080&text=" + encodeURIComponent(currentSeries.media.title)}
           alt={currentSeries.media.title}
         />
       </div>
@@ -189,7 +189,7 @@ export default function Banner() {
             <div className="w-10 h-8 pr-2 inline-flex flex-col justify-start items-start">
               <div className="w-8 h-8 rounded-full inline-flex justify-center items-start overflow-hidden">
                 <img
-                  src={currentSeries.recommendator.profileImage || "/placeholder.svg"}
+                  src={currentSeries.recommendator.profileImage || "/api/placeholder?width=32&height=32&text=U"}
                   alt={currentSeries.recommendator.userName}
                   className="w-8 h-8 object-cover"
                 />
